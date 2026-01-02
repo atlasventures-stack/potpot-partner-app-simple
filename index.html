@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PotPot Partner | Gardener App</title>
     <style>
         * {
@@ -13,17 +13,19 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f5f7f5 0%, #e8f5e9 100%);
+            background: #f5f7f5;
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
             max-width: 480px;
             margin: 0 auto;
             min-height: 100vh;
+            background: #f5f7f5;
         }
 
-        /* Login Screen */
+        /* ===== LOGIN SCREEN ===== */
         .login-screen {
             min-height: 100vh;
             display: flex;
@@ -35,7 +37,7 @@
 
         .login-logo {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 48px;
         }
 
         .login-logo .icon {
@@ -72,6 +74,7 @@
             font-weight: 600;
             color: #333;
             margin-bottom: 8px;
+            margin-left: 4px;
         }
 
         .input-wrapper {
@@ -133,10 +136,6 @@
             margin-top: 12px;
         }
 
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
         .error-message {
             background: #ffebee;
             color: #c62828;
@@ -144,22 +143,19 @@
             border-radius: 10px;
             font-size: 14px;
             margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .hint {
             font-size: 12px;
             color: #888;
             margin-top: 8px;
+            margin-left: 4px;
         }
 
-        /* Dashboard */
+        /* ===== DASHBOARD ===== */
         .dashboard {
-            background: #f5f7f5;
             min-height: 100vh;
-            padding-bottom: 100px;
+            padding-bottom: 40px;
         }
 
         .dashboard-header {
@@ -201,7 +197,7 @@
             color: #333;
         }
 
-        .section-title .badge {
+        .badge {
             background: #e8f5e9;
             color: #2e7d32;
             padding: 4px 12px;
@@ -219,19 +215,17 @@
             border: 2px solid transparent;
             cursor: pointer;
             transition: all 0.2s;
+            position: relative;
         }
 
-        .job-card:hover {
+        .job-card:active {
             border-color: #4caf50;
+            transform: scale(0.98);
         }
 
         .job-card.completed {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: default;
-        }
-
-        .job-card.completed:hover {
-            border-color: transparent;
         }
 
         .job-header {
@@ -246,17 +240,8 @@
             border-radius: 8px;
             font-size: 11px;
             font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .service-badge.full {
             background: #e8f5e9;
             color: #2e7d32;
-        }
-
-        .service-badge.checkup {
-            background: #e3f2fd;
-            color: #1565c0;
         }
 
         .job-time {
@@ -277,21 +262,13 @@
         .job-address {
             font-size: 14px;
             color: #666;
-            display: flex;
-            align-items: flex-start;
-            gap: 6px;
             margin-bottom: 12px;
             line-height: 1.4;
-        }
-
-        .job-meta {
-            display: flex;
-            gap: 16px;
-            align-items: center;
+            padding-right: 60px;
         }
 
         .job-plants {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
             font-size: 13px;
@@ -302,9 +279,11 @@
         }
 
         .map-btn {
-            margin-left: auto;
-            width: 48px;
-            height: 48px;
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            width: 50px;
+            height: 50px;
             background: #e3f2fd;
             color: #1565c0;
             border: none;
@@ -314,13 +293,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
-            transition: all 0.2s;
-        }
-
-        .map-btn:hover {
-            background: #bbdefb;
         }
 
         .map-btn svg {
@@ -329,20 +303,10 @@
             margin-bottom: 2px;
         }
 
-        .empty-state {
+        .empty-state, .loading {
             text-align: center;
             padding: 60px 24px;
             color: #888;
-        }
-
-        .empty-state .icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px 24px;
         }
 
         .spinner {
@@ -359,7 +323,16 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Service Flow */
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* ===== SERVICE SCREEN ===== */
         .service-screen {
             min-height: 100vh;
             background: #f5f7f5;
@@ -390,12 +363,25 @@
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
+            padding: 4px;
         }
 
         .step-title {
             font-size: 18px;
             font-weight: 700;
             color: #2e7d32;
+        }
+
+        .guide-btn {
+            background: none;
+            border: none;
+            color: #2e7d32;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .progress-bar {
@@ -413,50 +399,59 @@
 
         .service-content {
             flex: 1;
-            padding: 20px;
+            padding: 16px;
             padding-bottom: 100px;
             overflow-y: auto;
         }
 
-        .info-card {
+        /* Step Cards */
+        .step-card {
             background: white;
             border-radius: 16px;
             overflow: hidden;
             margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
-        .info-card-header {
+        .step-card-header {
             background: #e8f5e9;
             padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 1px solid #c8e6c9;
         }
 
-        .info-card-header h3 {
+        .step-card-header h3 {
             font-size: 16px;
             font-weight: 700;
             color: #2e7d32;
         }
 
-        .info-card-body {
-            padding: 20px;
+        .step-card-header .hindi {
+            font-size: 13px;
+            color: #666;
         }
 
-        .info-card-body ul {
+        .step-card-body {
+            padding: 16px 20px;
+        }
+
+        .step-card-body ul {
             list-style: none;
         }
 
-        .info-card-body li {
+        .step-card-body li {
             padding: 8px 0;
             font-size: 14px;
-            color: #444;
+            color: #333;
             display: flex;
             align-items: flex-start;
             gap: 12px;
             line-height: 1.5;
         }
 
-        .info-card-body li::before {
+        .step-card-body li::before {
             content: '';
             width: 6px;
             height: 6px;
@@ -466,121 +461,255 @@
             flex-shrink: 0;
         }
 
+        /* Warning & Info Boxes */
         .warning-box {
-            background: #fff3e0;
-            border: 1px solid #ffcc80;
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
             border-radius: 12px;
-            padding: 16px;
+            padding: 14px 16px;
             margin-bottom: 16px;
             font-size: 14px;
-            color: #e65100;
+            color: #c62828;
             display: flex;
             align-items: flex-start;
-            gap: 12px;
+            gap: 10px;
         }
 
         .info-box {
             background: #e3f2fd;
             border: 1px solid #90caf9;
             border-radius: 12px;
-            padding: 16px;
+            padding: 14px 16px;
             margin-bottom: 16px;
             font-size: 14px;
             color: #1565c0;
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
+            align-items: center;
+            gap: 10px;
         }
 
-        .service-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+        .neutral-box {
             background: white;
-            padding: 16px 20px;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 12px;
-            z-index: 20;
-        }
-
-        .service-footer .btn {
-            flex: 1;
-        }
-
-        .service-footer .btn-back {
-            flex: 0.5;
-            background: #f5f5f5;
-            color: #333;
-        }
-
-        /* Report Form */
-        .report-form {
-            background: white;
-            border-radius: 16px;
-            padding: 24px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .report-form .form-group {
-            margin-bottom: 24px;
-        }
-
-        .report-form label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .report-form input[type="number"],
-        .report-form textarea {
-            width: 100%;
-            padding: 16px;
-            font-size: 18px;
-            font-weight: 600;
-            border: 2px solid #e0e0e0;
+            border: 1px solid #e0e0e0;
             border-radius: 12px;
-            background: #f9f9f9;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #333;
             text-align: center;
         }
 
-        .report-form textarea {
-            font-size: 14px;
-            font-weight: 400;
-            text-align: left;
-            min-height: 100px;
-            resize: vertical;
+        /* Health Cards */
+        .health-card {
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
         }
 
-        .report-form input:focus,
-        .report-form textarea:focus {
+        .health-card.healthy {
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+        }
+
+        .health-card.infected {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+        }
+
+        .health-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .health-card.healthy h3 {
+            color: #2e7d32;
+        }
+
+        .health-card.infected h3 {
+            color: #c62828;
+        }
+
+        .health-card ul {
+            list-style: disc;
+            padding-left: 20px;
+        }
+
+        .health-card li {
+            padding: 4px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .health-card.healthy li {
+            color: #1b5e20;
+        }
+
+        .health-card.infected li {
+            color: #b71c1c;
+        }
+
+        .health-card li strong {
+            font-weight: 700;
+        }
+
+        /* Photo Section */
+        .photo-section {
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+
+        .photo-section-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .photo-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-item .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .photo-add {
+            aspect-ratio: 1;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fafafa;
+            transition: all 0.2s;
+        }
+
+        .photo-add:hover {
+            border-color: #4caf50;
+            background: #f5f5f5;
+        }
+
+        .photo-add svg {
+            width: 32px;
+            height: 32px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .photo-add span {
+            font-size: 13px;
+            color: #888;
+            font-weight: 500;
+        }
+
+        /* Report Form */
+        .report-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .report-field {
+            margin-bottom: 24px;
+        }
+
+        .report-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .report-field label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .report-field label.red {
+            color: #c62828;
+        }
+
+        .report-input {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #fafafa;
+            text-align: center;
+        }
+
+        .report-input:focus {
             outline: none;
             border-color: #4caf50;
             background: white;
         }
 
-        .red-zone-section label {
-            color: #c62828;
+        .report-input::placeholder {
+            color: #bbb;
         }
 
-        .red-zone-input {
+        .red-zone-input-row {
             display: flex;
             gap: 8px;
             margin-bottom: 12px;
         }
 
-        .red-zone-input input {
+        .red-zone-input-row input {
             flex: 1;
-            text-align: left !important;
-            font-size: 14px !important;
-            font-weight: 400 !important;
+            padding: 14px 16px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #424242;
+            color: white;
         }
 
-        .red-zone-input button {
-            width: 48px;
+        .red-zone-input-row input::placeholder {
+            color: #999;
+        }
+
+        .red-zone-input-row button {
+            width: 50px;
             background: #c62828;
             color: white;
             border: none;
@@ -611,10 +740,53 @@
             border: none;
             color: #c62828;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 20px;
+            padding: 0 4px;
         }
 
-        /* Complete Screen */
+        .red-zone-empty {
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* Service Footer */
+        .service-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 12px;
+            z-index: 20;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .service-footer .btn-back {
+            flex: 1;
+            background: white;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .service-footer .btn-next {
+            flex: 2;
+            background: #4caf50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* ===== COMPLETE SCREEN ===== */
         .complete-screen {
             min-height: 100vh;
             background: white;
@@ -645,7 +817,7 @@
             margin-bottom: 8px;
         }
 
-        .complete-screen p {
+        .complete-screen > p {
             color: #888;
             margin-bottom: 32px;
         }
@@ -683,20 +855,11 @@
         .hidden {
             display: none !important;
         }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 12px;
-            cursor: pointer;
-            padding: 8px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Login Screen -->
+        <!-- ===== LOGIN SCREEN ===== -->
         <div id="loginScreen" class="login-screen">
             <div class="login-logo">
                 <div class="icon">🌱</div>
@@ -731,7 +894,7 @@
             </div>
         </div>
 
-        <!-- Dashboard -->
+        <!-- ===== DASHBOARD ===== -->
         <div id="dashboard" class="dashboard hidden">
             <div class="dashboard-header">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -757,19 +920,18 @@
                 <div id="jobsList"></div>
 
                 <div id="emptyState" class="empty-state hidden">
-                    <div class="icon">📋</div>
-                    <p>No jobs scheduled for today</p>
+                    <p>📋 No jobs scheduled for today</p>
                 </div>
             </div>
         </div>
 
-        <!-- Service Screen -->
+        <!-- ===== SERVICE SCREEN ===== -->
         <div id="serviceScreen" class="service-screen hidden">
             <div class="service-header">
                 <div class="service-header-top">
                     <button class="exit-btn" onclick="exitService()">EXIT</button>
-                    <span id="stepTitle" class="step-title">Step 1</span>
-                    <div style="width: 40px;"></div>
+                    <span id="stepTitle" class="step-title">Steps 1 & 2</span>
+                    <button class="guide-btn">📋 GUIDE</button>
                 </div>
                 <div class="progress-bar">
                     <div id="progressFill" class="progress-fill" style="width: 0%"></div>
@@ -780,11 +942,13 @@
 
             <div class="service-footer">
                 <button class="btn btn-back" onclick="prevStep()">Back</button>
-                <button id="nextBtn" class="btn btn-primary" onclick="nextStep()">Next</button>
+                <button id="nextBtn" class="btn btn-next" onclick="nextStep()">
+                    Next Step <span>›</span>
+                </button>
             </div>
         </div>
 
-        <!-- Complete Screen -->
+        <!-- ===== COMPLETE SCREEN ===== -->
         <div id="completeScreen" class="complete-screen hidden">
             <div class="complete-icon">✅</div>
             <h1>Service Completed!</h1>
@@ -812,126 +976,358 @@
         let reportData = {
             totalPlants: '',
             redZonePlants: [],
-            notes: ''
+            beforePhotos: [],
+            afterPhotos: []
         };
 
-        // Service Steps
+        // ============================================
+        // SERVICE STEPS - Matching Mockups
+        // ============================================
         const SERVICE_STEPS = [
             {
-                id: 'greeting',
-                title: 'Step 1: Greeting',
-                content: `
-                    <div class="info-card">
-                        <div class="info-card-header">
-                            <h3>Greeting the Customer</h3>
+                id: 'screen_1',
+                title: 'Steps 1 & 2',
+                render: () => `
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 1: Greeting</h3>
+                            <span class="hindi">अभिवादन</span>
                         </div>
-                        <div class="info-card-body">
+                        <div class="step-card-body">
                             <ul>
-                                <li>Say: "Namaste, PotPot plant care service" with a smile</li>
-                                <li>Ask: "Any issues with plants since last time?"</li>
-                                <li>Listen to their concerns before starting</li>
+                                <li>Say: "Namaste, PotPot service" with smile.</li>
+                                <li>Ask: "Any issues since last time?" (पिछली बार से कोई समस्या?)</li>
                             </ul>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 2: Before Photos</h3>
+                            <span class="hindi">पहले फोटो</span>
+                        </div>
+                        <div class="step-card-body">
+                            <ul>
+                                <li>Take multiple wide shots of all plant areas.</li>
+                                <li>Take close-ups of any specific issues.</li>
+                            </ul>
+                            <div class="photo-section">
+                                <div class="photo-section-label">Photos</div>
+                                <div class="photo-grid" id="beforePhotosGrid">
+                                    ${renderPhotoGrid('beforePhotos')}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `
             },
             {
-                id: 'inspection',
-                title: 'Step 2: Plant Inspection',
-                content: `
-                    <div class="info-box">
-                        💡 Check each plant carefully before treatment
-                    </div>
-                    <div class="info-card">
-                        <div class="info-card-header">
-                            <h3>Visual Check</h3>
-                        </div>
-                        <div class="info-card-body">
-                            <ul>
-                                <li>Look for yellowing or wilting leaves</li>
-                                <li>Check for pests (under leaves, on stems)</li>
-                                <li>Check soil moisture with finger</li>
-                                <li>Note any plants that need special attention</li>
-                            </ul>
-                        </div>
-                    </div>
-                `
-            },
-            {
-                id: 'treatment',
-                title: 'Step 3: Treatment',
-                content: `
+                id: 'screen_2',
+                title: 'Steps 3 & 4',
+                render: () => `
                     <div class="warning-box">
-                        ⚠️ Clean tools between plants to prevent disease spread!
+                        ⚠️ 🚫 Clean blade between plants! Never remove >30% of plant.
                     </div>
-                    <div class="info-card">
-                        <div class="info-card-header">
-                            <h3>Healthy Plants</h3>
+
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 3: Pruning</h3>
+                            <span class="hindi">छंटाई</span>
                         </div>
-                        <div class="info-card-body">
+                        <div class="step-card-body">
                             <ul>
-                                <li>Prune dead/yellow leaves</li>
-                                <li>Loosen top soil (2-3cm depth)</li>
-                                <li>Apply fertilizer if needed</li>
-                                <li>Water at soil level</li>
+                                <li>Cut main stem tip to make plant bushy.</li>
+                                <li>Cut 1cm above node at 45°.</li>
+                                <li>Remove yellow/dead leaves and dead flowers.</li>
                             </ul>
                         </div>
                     </div>
-                    <div class="info-card" style="border: 2px solid #ffcdd2;">
-                        <div class="info-card-header" style="background: #ffebee; border-color: #ffcdd2;">
-                            <h3 style="color: #c62828;">Infected Plants</h3>
+
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 4: Soil Loosening</h3>
+                            <span class="hindi">गुड़ाई</span>
                         </div>
-                        <div class="info-card-body">
+                        <div class="step-card-body">
                             <ul>
-                                <li>Apply pesticide (Neem oil / SAAF)</li>
-                                <li>Do NOT apply fertilizer</li>
-                                <li>Do NOT wipe leaves</li>
-                                <li>Isolate if possible</li>
-                            </ul>
-                        </div>
-                    </div>
-                `
-            },
-            {
-                id: 'cleanup',
-                title: 'Step 4: Cleanup',
-                content: `
-                    <div class="info-card">
-                        <div class="info-card-header">
-                            <h3>Final Cleanup</h3>
-                        </div>
-                        <div class="info-card-body">
-                            <ul>
-                                <li>Wipe clean all pots exterior</li>
-                                <li>Clean the saucers</li>
-                                <li>Sweep fallen leaves and soil</li>
-                                <li>Wipe any water spills</li>
-                                <li>Take all green waste with you</li>
+                                <li>Dig top 2-3 cm around edges of pot.</li>
+                                <li>Do NOT dig deep near the center (protect roots).</li>
                             </ul>
                         </div>
                     </div>
                 `
             },
             {
-                id: 'report',
-                title: 'Step 5: Service Report',
-                isReport: true,
-                content: '' // Will be rendered separately
+                id: 'screen_3',
+                title: 'Step 5',
+                render: () => `
+                    <div class="neutral-box">
+                        Compare each plant and treat accordingly.
+                    </div>
+
+                    <div class="info-box">
+                        ℹ️ Nov-Feb: NO fertilizer for anyone.
+                    </div>
+
+                    <div class="health-card healthy">
+                        <h3>🌿 Healthy Plants</h3>
+                        <ul>
+                            <li>Apply Fertilizers (Vermi + Coco + DAP)</li>
+                            <li>Plain water spray on leaves</li>
+                            <li>Wipe leaves clean with damp cloth</li>
+                        </ul>
+                    </div>
+
+                    <div class="health-card infected">
+                        <h3>🐛 Infected Plants</h3>
+                        <ul>
+                            <li>Apply Pesticides (Neem / SAAF)</li>
+                            <li>Medicine spray on leaves</li>
+                            <li><strong>NO FERTILIZER</strong></li>
+                            <li><strong>DO NOT WIPE leaves</strong></li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                id: 'screen_4',
+                title: 'Steps 6 & 7',
+                render: () => `
+                    <div class="warning-box">
+                        ⚠️ If infected: Do NOT wipe leaves, only clean pot.
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 6: Cleaning</h3>
+                            <span class="hindi">सफाई</span>
+                        </div>
+                        <div class="step-card-body">
+                            <ul>
+                                <li>Wipe large leaves with damp cloth.</li>
+                                <li>Wipe pot exterior and saucer.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 7: Watering</h3>
+                            <span class="hindi">पानी देना</span>
+                        </div>
+                        <div class="step-card-body">
+                            <ul>
+                                <li>Check moisture meter first!</li>
+                                <li>Water at soil level until drainage.</li>
+                                <li>Empty saucer after 30 mins.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'screen_5',
+                title: 'Steps 8, 9 & 10',
+                render: () => `
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 8: Stickers</h3>
+                            <span class="hindi">स्टिकर</span>
+                        </div>
+                        <div class="step-card-body">
+                            <ul>
+                                <li>🔵 Blue (Daily), 🟢 Green (Alt Days), 🟡 Yellow (Weekly).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 9: Floor & Drainage</h3>
+                            <span class="hindi">फर्श और ड्रेनेज</span>
+                        </div>
+                        <div class="step-card-body">
+                            <ul>
+                                <li>Ensure every pot has a hole.</li>
+                                <li>Sweep fallen leaves/soil. Wipe water spills.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 10: Garbage</h3>
+                            <span class="hindi">कचरा</span>
+                        </div>
+                        <div class="step-card-body">
+                            <ul>
+                                <li>Take all green waste with you.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'screen_6',
+                title: 'Step 11',
+                render: () => `
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 11: After Photos</h3>
+                            <span class="hindi">बाद की फोटो</span>
+                        </div>
+                        <div class="step-card-body">
+                            <ul>
+                                <li>Take photos from same angles.</li>
+                                <li>Show clean plants, clean pots, clean floor.</li>
+                            </ul>
+                            <div class="photo-section">
+                                <div class="photo-section-label">Photos</div>
+                                <div class="photo-grid" id="afterPhotosGrid">
+                                    ${renderPhotoGrid('afterPhotos')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'screen_7',
+                title: 'Step 12',
+                render: () => `
+                    <div class="report-card">
+                        <div class="report-field">
+                            <label>Total Plants Serviced</label>
+                            <input type="number" class="report-input" id="totalPlantsInput"
+                                   placeholder="e.g. 25" value="${reportData.totalPlants}"
+                                   onchange="reportData.totalPlants = this.value">
+                        </div>
+
+                        <div class="report-field">
+                            <label class="red">Red Zone Plants (Critical)</label>
+                            <div class="red-zone-input-row">
+                                <input type="text" id="redZoneInput" placeholder="Plant Name - Issue (e.g. Rose - Fungus)">
+                                <button onclick="addRedZone()">+</button>
+                            </div>
+                            <div id="redZoneList">
+                                ${reportData.redZonePlants.length > 0
+                                    ? `<div class="red-zone-list">${reportData.redZonePlants.map((p, i) => `
+                                        <div class="red-zone-item">
+                                            <span>${p}</span>
+                                            <button onclick="removeRedZone(${i})">×</button>
+                                        </div>
+                                      `).join('')}</div>`
+                                    : '<div class="red-zone-empty">No red zone plants added.</div>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'screen_8',
+                title: 'Steps 13 & 14',
+                isLast: true,
+                render: () => `
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 13: Care Tips</h3>
+                            <span class="hindi">टिप्स</span>
+                        </div>
+                        <div class="step-card-body">
+                            <ul>
+                                <li>Explain medicines and stickers to customer.</li>
+                                <li>Answer questions.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <h3>Step 14: Schedule</h3>
+                            <span class="hindi">अगला चेक-अप</span>
+                        </div>
+                        <div class="step-card-body">
+                            <ul>
+                                <li>Say: "4-5 दिन बाद हम आएंगे फ्री चेक-अप के लिए!"</li>
+                                <li>Next Full Service in ~25-30 days.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
             }
         ];
+
+        // ============================================
+        // PHOTO HELPERS
+        // ============================================
+        function renderPhotoGrid(type) {
+            const photos = reportData[type] || [];
+            let html = photos.map((photo, i) => `
+                <div class="photo-item">
+                    <img src="${photo}" alt="Photo ${i+1}">
+                    <button class="remove-btn" onclick="removePhoto('${type}', ${i})">×</button>
+                </div>
+            `).join('');
+
+            html += `
+                <label class="photo-add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <span>Add</span>
+                    <input type="file" accept="image/*" capture="environment" style="display:none"
+                           onchange="addPhoto('${type}', this)">
+                </label>
+            `;
+
+            return html;
+        }
+
+        function addPhoto(type, input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    reportData[type].push(e.target.result);
+                    renderStep();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removePhoto(type, index) {
+            reportData[type].splice(index, 1);
+            renderStep();
+        }
+
+        // ============================================
+        // RED ZONE HELPERS
+        // ============================================
+        function addRedZone() {
+            const input = document.getElementById('redZoneInput');
+            if (input.value.trim()) {
+                reportData.redZonePlants.push(input.value.trim());
+                input.value = '';
+                renderStep();
+            }
+        }
+
+        function removeRedZone(index) {
+            reportData.redZonePlants.splice(index, 1);
+            renderStep();
+        }
 
         // ============================================
         // LOGIN HANDLERS
         // ============================================
         function handlePhoneSubmit() {
             const phone = document.getElementById('phoneInput').value.trim();
-
             if (phone.length !== 10) {
                 showLoginError('Please enter a valid 10-digit phone number');
                 return;
             }
-
-            // Store phone and show OTP step
             currentUser = { phone: phone };
             document.getElementById('phoneStep').classList.add('hidden');
             document.getElementById('otpStep').classList.remove('hidden');
@@ -941,13 +1337,10 @@
         function handleOtpSubmit() {
             const otp = document.getElementById('otpInput').value.trim();
             const expectedOtp = currentUser.phone.slice(-4);
-
             if (otp !== expectedOtp) {
                 showLoginError('Invalid OTP. Please try again.');
                 return;
             }
-
-            // Login successful - fetch gardener info and jobs
             hideLoginError();
             showDashboard();
         }
@@ -960,9 +1353,9 @@
         }
 
         function showLoginError(message) {
-            const errorEl = document.getElementById('loginError');
-            errorEl.textContent = '⚠️ ' + message;
-            errorEl.classList.remove('hidden');
+            const el = document.getElementById('loginError');
+            el.textContent = '⚠️ ' + message;
+            el.classList.remove('hidden');
         }
 
         function hideLoginError() {
@@ -986,24 +1379,19 @@
         async function showDashboard() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-
-            // Show loading
             document.getElementById('jobsLoading').classList.remove('hidden');
             document.getElementById('jobsList').innerHTML = '';
             document.getElementById('emptyState').classList.add('hidden');
 
             try {
-                // Fetch jobs for this gardener
                 const response = await fetch(`${API_URL}?action=getGardenerJobs&phone=${currentUser.phone}`);
                 const data = await response.json();
-
                 document.getElementById('jobsLoading').classList.add('hidden');
 
                 if (data.success && data.gardener) {
                     currentUser.name = data.gardener.name;
                     currentUser.gardenerID = data.gardener.id;
                     document.getElementById('welcomeText').textContent = `Welcome, ${data.gardener.name}`;
-
                     jobs = data.jobs || [];
                     renderJobs();
                 } else {
@@ -1011,20 +1399,15 @@
                     handleLogout();
                 }
             } catch (error) {
-                console.error('Error fetching jobs:', error);
+                console.error('Error:', error);
                 document.getElementById('jobsLoading').classList.add('hidden');
                 document.getElementById('emptyState').classList.remove('hidden');
-                document.getElementById('emptyState').innerHTML = `
-                    <div class="icon">⚠️</div>
-                    <p>Failed to load jobs. Please try again.</p>
-                `;
             }
         }
 
         function renderJobs() {
             const jobsList = document.getElementById('jobsList');
             const pendingJobs = jobs.filter(j => j.status !== 'COMPLETED');
-
             document.getElementById('jobCount').textContent = `${pendingJobs.length} Job${pendingJobs.length !== 1 ? 's' : ''}`;
 
             if (jobs.length === 0) {
@@ -1036,35 +1419,25 @@
                 <div class="job-card ${job.status === 'COMPLETED' ? 'completed' : ''}"
                      onclick="${job.status !== 'COMPLETED' ? `startJob('${job.id}')` : ''}">
                     <div class="job-header">
-                        <span class="service-badge full">
+                        <span class="service-badge">
                             ${job.status === 'COMPLETED' ? '✅ COMPLETED' : '🛠️ FULL SERVICE'}
                         </span>
                         <span class="job-time">${job.timeSlot || 'Today'}</span>
                     </div>
                     <div class="job-customer">${job.customerName}</div>
-                    <div class="job-address">
-                        📍 ${job.address}
-                    </div>
-                    <div class="job-meta">
-                        <div class="job-plants">
-                            🌿 ${job.plantCount || 'N/A'} Plants
-                        </div>
-                        ${job.mapLink ? `
-                            <button class="map-btn" onclick="event.stopPropagation(); openMap('${job.mapLink}')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                    <circle cx="12" cy="10" r="3"></circle>
-                                </svg>
-                                MAP
-                            </button>
-                        ` : ''}
-                    </div>
+                    <div class="job-address">📍 ${job.address}</div>
+                    <div class="job-plants">🌿 ${job.plantCount || 'N/A'} Plants</div>
+                    ${job.mapLink ? `
+                        <button class="map-btn" onclick="event.stopPropagation(); window.open('${job.mapLink}', '_blank')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            MAP
+                        </button>
+                    ` : ''}
                 </div>
             `).join('');
-        }
-
-        function openMap(mapLink) {
-            window.open(mapLink, '_blank');
         }
 
         // ============================================
@@ -1078,7 +1451,8 @@
             reportData = {
                 totalPlants: currentJob.plantCount || '',
                 redZonePlants: [],
-                notes: ''
+                beforePhotos: [],
+                afterPhotos: []
             };
 
             document.getElementById('dashboard').classList.add('hidden');
@@ -1088,68 +1462,20 @@
 
         function renderStep() {
             const step = SERVICE_STEPS[currentStepIndex];
-            const totalSteps = SERVICE_STEPS.length;
-            const progress = ((currentStepIndex + 1) / totalSteps) * 100;
+            const progress = ((currentStepIndex + 1) / SERVICE_STEPS.length) * 100;
 
             document.getElementById('stepTitle').textContent = step.title;
             document.getElementById('progressFill').style.width = `${progress}%`;
-            document.getElementById('nextBtn').textContent = currentStepIndex === totalSteps - 1 ? 'Complete Service' : 'Next';
+            document.getElementById('serviceContent').innerHTML = step.render();
 
-            if (step.isReport) {
-                renderReportForm();
+            const nextBtn = document.getElementById('nextBtn');
+            if (step.isLast) {
+                nextBtn.innerHTML = 'Complete Job <span>›</span>';
             } else {
-                document.getElementById('serviceContent').innerHTML = step.content;
+                nextBtn.innerHTML = 'Next Step <span>›</span>';
             }
 
             window.scrollTo(0, 0);
-        }
-
-        function renderReportForm() {
-            document.getElementById('serviceContent').innerHTML = `
-                <div class="report-form">
-                    <div class="form-group">
-                        <label>Total Plants Serviced</label>
-                        <input type="number" id="totalPlantsInput" placeholder="e.g. 25"
-                               value="${reportData.totalPlants}" onchange="reportData.totalPlants = this.value">
-                    </div>
-
-                    <div class="form-group red-zone-section">
-                        <label>🚨 Red Zone Plants (Critical Issues)</label>
-                        <div class="red-zone-input">
-                            <input type="text" id="redZoneInput" placeholder="Plant name - Issue (e.g. Rose - Fungus)">
-                            <button onclick="addRedZone()">+</button>
-                        </div>
-                        <div id="redZoneList" class="red-zone-list">
-                            ${reportData.redZonePlants.map((p, i) => `
-                                <div class="red-zone-item">
-                                    <span>${p}</span>
-                                    <button onclick="removeRedZone(${i})">×</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Notes (Optional)</label>
-                        <textarea id="notesInput" placeholder="Any additional notes..."
-                                  onchange="reportData.notes = this.value">${reportData.notes}</textarea>
-                    </div>
-                </div>
-            `;
-        }
-
-        function addRedZone() {
-            const input = document.getElementById('redZoneInput');
-            if (input.value.trim()) {
-                reportData.redZonePlants.push(input.value.trim());
-                input.value = '';
-                renderReportForm();
-            }
-        }
-
-        function removeRedZone(index) {
-            reportData.redZonePlants.splice(index, 1);
-            renderReportForm();
         }
 
         function nextStep() {
@@ -1182,7 +1508,7 @@
         async function completeService() {
             const btn = document.getElementById('nextBtn');
             btn.disabled = true;
-            btn.textContent = 'Saving...';
+            btn.innerHTML = 'Saving...';
 
             try {
                 const payload = {
@@ -1195,7 +1521,6 @@
                     address: currentJob.address,
                     totalPlants: reportData.totalPlants,
                     redZonePlants: reportData.redZonePlants.join(', '),
-                    notes: reportData.notes,
                     completedAt: new Date().toISOString()
                 };
 
@@ -1208,23 +1533,19 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Mark job as completed locally
                     const jobIndex = jobs.findIndex(j => j.id === currentJob.id);
-                    if (jobIndex !== -1) {
-                        jobs[jobIndex].status = 'COMPLETED';
-                    }
-
+                    if (jobIndex !== -1) jobs[jobIndex].status = 'COMPLETED';
                     showCompleteScreen();
                 } else {
-                    alert('Failed to save report: ' + (result.error || 'Unknown error'));
+                    alert('Failed to save: ' + (result.error || 'Unknown error'));
                     btn.disabled = false;
-                    btn.textContent = 'Complete Service';
+                    btn.innerHTML = 'Complete Job <span>›</span>';
                 }
             } catch (error) {
-                console.error('Error saving report:', error);
-                alert('Failed to save report. Please try again.');
+                console.error('Error:', error);
+                alert('Failed to save. Please try again.');
                 btn.disabled = false;
-                btn.textContent = 'Complete Service';
+                btn.innerHTML = 'Complete Job <span>›</span>';
             }
         }
 
@@ -1245,12 +1566,6 @@
                     <span class="label">Red Zone Plants</span>
                     <span class="value">${reportData.redZonePlants.length}</span>
                 </div>
-                ${reportData.notes ? `
-                    <div class="row">
-                        <span class="label">Notes</span>
-                        <span class="value">${reportData.notes}</span>
-                    </div>
-                ` : ''}
             `;
         }
 
@@ -1265,7 +1580,6 @@
         // INIT
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
-            // Enter key handlers
             document.getElementById('phoneInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handlePhoneSubmit();
             });
