@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PotPot Partner | Gardener App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7f5 0%, #e8f5e9 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 32px 24px;
+            background: white;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-logo .icon {
+            width: 80px;
+            height: 80px;
+            background: #e8f5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 40px;
+        }
+
+        .login-logo h1 {
+            color: #2e7d32;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .login-logo p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f9f9f9;
+            transition: all 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #4caf50;
+            background: white;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #43a047;
+        }
+
+        .btn-primary:disabled {
+            background: #a5d6a7;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            background: #f5f7f5;
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .dashboard-header h1 {
+            color: #2e7d32;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .dashboard-header p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .jobs-section {
+            padding: 16px;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+
+        .section-title h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .section-title .badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .job-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .job-card:hover {
+            border-color: #4caf50;
+        }
+
+        .job-card.completed {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .job-card.completed:hover {
+            border-color: transparent;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .service-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .service-badge.full {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .service-badge.checkup {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .job-time {
+            font-size: 12px;
+            color: #888;
+            background: #f5f5f5;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .job-customer {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .job-address {
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .job-meta {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .job-plants {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .map-btn {
+            margin-left: auto;
+            width: 48px;
+            height: 48px;
+            background: #e3f2fd;
+            color: #1565c0;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .map-btn:hover {
+            background: #bbdefb;
+        }
+
+        .map-btn svg {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: #888;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 24px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #4caf50;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Service Flow */
+        .service-screen {
+            min-height: 100vh;
+            background: #f5f7f5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .service-header {
+            background: white;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .service-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .exit-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4caf50;
+            transition: width 0.3s;
+        }
+
+        .service-content {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 100px;
+            overflow-y: auto;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .info-card-header {
+            background: #e8f5e9;
+            padding: 14px 20px;
+            border-bottom: 1px solid #c8e6c9;
+        }
+
+        .info-card-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+
+        .info-card-body {
+            padding: 20px;
+        }
+
+        .info-card-body ul {
+            list-style: none;
+        }
+
+        .info-card-body li {
+            padding: 8px 0;
+            font-size: 14px;
+            color: #444;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            line-height: 1.5;
+        }
+
+        .info-card-body li::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin-top: 8px;
+            flex-shrink: 0;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #e65100;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #1565c0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .service-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 12px;
+            z-index: 20;
+        }
+
+        .service-footer .btn {
+            flex: 1;
+        }
+
+        .service-footer .btn-back {
+            flex: 0.5;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        /* Report Form */
+        .report-form {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .report-form .form-group {
+            margin-bottom: 24px;
+        }
+
+        .report-form label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .report-form input[type="number"],
+        .report-form textarea {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f9f9f9;
+            text-align: center;
+        }
+
+        .report-form textarea {
+            font-size: 14px;
+            font-weight: 400;
+            text-align: left;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .report-form input:focus,
+        .report-form textarea:focus {
+            outline: none;
+            border-color: #4caf50;
+            background: white;
+        }
+
+        .red-zone-section label {
+            color: #c62828;
+        }
+
+        .red-zone-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .red-zone-input input {
+            flex: 1;
+            text-align: left !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+        }
+
+        .red-zone-input button {
+            width: 48px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .red-zone-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .red-zone-item {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .red-zone-item button {
+            background: none;
+            border: none;
+            color: #c62828;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* Complete Screen */
+        .complete-screen {
+            min-height: 100vh;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .complete-icon {
+            width: 100px;
+            height: 100px;
+            background: #e8f5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            font-size: 50px;
+        }
+
+        .complete-screen h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .complete-screen p {
+            color: #888;
+            margin-bottom: 32px;
+        }
+
+        .complete-summary {
+            width: 100%;
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .complete-summary .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .complete-summary .row:last-child {
+            border-bottom: none;
+        }
+
+        .complete-summary .label {
+            color: #888;
+        }
+
+        .complete-summary .value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <div class="login-logo">
+                <div class="icon">🌱</div>
+                <h1>PotPot Partner</h1>
+                <p>Gardener App</p>
+            </div>
+
+            <div id="loginError" class="error-message hidden"></div>
+
+            <div id="phoneStep">
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📱</span>
+                        <input type="tel" id="phoneInput" placeholder="Enter 10-digit number" maxlength="10">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="handlePhoneSubmit()">Get OTP</button>
+            </div>
+
+            <div id="otpStep" class="hidden">
+                <div class="form-group">
+                    <label>Enter OTP</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input type="tel" id="otpInput" placeholder="Enter 4-digit OTP" maxlength="4">
+                    </div>
+                    <p class="hint">OTP is the last 4 digits of your phone number</p>
+                </div>
+                <button class="btn btn-primary" onclick="handleOtpSubmit()">Login</button>
+                <button class="btn btn-secondary" onclick="backToPhone()">Change Number</button>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="dashboard hidden">
+            <div class="dashboard-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1>My Tasks</h1>
+                        <p id="welcomeText">Welcome, Gardener</p>
+                    </div>
+                    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="jobs-section">
+                <div class="section-title">
+                    <h2>Today's Visits</h2>
+                    <span id="jobCount" class="badge">0 Jobs</span>
+                </div>
+
+                <div id="jobsLoading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading your jobs...</p>
+                </div>
+
+                <div id="jobsList"></div>
+
+                <div id="emptyState" class="empty-state hidden">
+                    <div class="icon">📋</div>
+                    <p>No jobs scheduled for today</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Screen -->
+        <div id="serviceScreen" class="service-screen hidden">
+            <div class="service-header">
+                <div class="service-header-top">
+                    <button class="exit-btn" onclick="exitService()">EXIT</button>
+                    <span id="stepTitle" class="step-title">Step 1</span>
+                    <div style="width: 40px;"></div>
+                </div>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="serviceContent" class="service-content"></div>
+
+            <div class="service-footer">
+                <button class="btn btn-back" onclick="prevStep()">Back</button>
+                <button id="nextBtn" class="btn btn-primary" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+
+        <!-- Complete Screen -->
+        <div id="completeScreen" class="complete-screen hidden">
+            <div class="complete-icon">✅</div>
+            <h1>Service Completed!</h1>
+            <p>Report has been saved successfully.</p>
+
+            <div id="completeSummary" class="complete-summary"></div>
+
+            <button class="btn btn-primary" onclick="backToDashboard()">Back to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIG
+        // ============================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxPFb4DaxXFbtOVq3l4NhMu6zP__OVrls7oQ3nsKOU2UKWLF3YJhx__bndvnuDUEorfng/exec';
+
+        // ============================================
+        // STATE
+        // ============================================
+        let currentUser = null;
+        let jobs = [];
+        let currentJob = null;
+        let currentStepIndex = 0;
+        let reportData = {
+            totalPlants: '',
+            redZonePlants: [],
+            notes: ''
+        };
+
+        // Service Steps
+        const SERVICE_STEPS = [
+            {
+                id: 'greeting',
+                title: 'Step 1: Greeting',
+                content: `
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <h3>Greeting the Customer</h3>
+                        </div>
+                        <div class="info-card-body">
+                            <ul>
+                                <li>Say: "Namaste, PotPot plant care service" with a smile</li>
+                                <li>Ask: "Any issues with plants since last time?"</li>
+                                <li>Listen to their concerns before starting</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'inspection',
+                title: 'Step 2: Plant Inspection',
+                content: `
+                    <div class="info-box">
+                        💡 Check each plant carefully before treatment
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <h3>Visual Check</h3>
+                        </div>
+                        <div class="info-card-body">
+                            <ul>
+                                <li>Look for yellowing or wilting leaves</li>
+                                <li>Check for pests (under leaves, on stems)</li>
+                                <li>Check soil moisture with finger</li>
+                                <li>Note any plants that need special attention</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'treatment',
+                title: 'Step 3: Treatment',
+                content: `
+                    <div class="warning-box">
+                        ⚠️ Clean tools between plants to prevent disease spread!
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <h3>Healthy Plants</h3>
+                        </div>
+                        <div class="info-card-body">
+                            <ul>
+                                <li>Prune dead/yellow leaves</li>
+                                <li>Loosen top soil (2-3cm depth)</li>
+                                <li>Apply fertilizer if needed</li>
+                                <li>Water at soil level</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="info-card" style="border: 2px solid #ffcdd2;">
+                        <div class="info-card-header" style="background: #ffebee; border-color: #ffcdd2;">
+                            <h3 style="color: #c62828;">Infected Plants</h3>
+                        </div>
+                        <div class="info-card-body">
+                            <ul>
+                                <li>Apply pesticide (Neem oil / SAAF)</li>
+                                <li>Do NOT apply fertilizer</li>
+                                <li>Do NOT wipe leaves</li>
+                                <li>Isolate if possible</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'cleanup',
+                title: 'Step 4: Cleanup',
+                content: `
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <h3>Final Cleanup</h3>
+                        </div>
+                        <div class="info-card-body">
+                            <ul>
+                                <li>Wipe clean all pots exterior</li>
+                                <li>Clean the saucers</li>
+                                <li>Sweep fallen leaves and soil</li>
+                                <li>Wipe any water spills</li>
+                                <li>Take all green waste with you</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'report',
+                title: 'Step 5: Service Report',
+                isReport: true,
+                content: '' // Will be rendered separately
+            }
+        ];
+
+        // ============================================
+        // LOGIN HANDLERS
+        // ============================================
+        function handlePhoneSubmit() {
+            const phone = document.getElementById('phoneInput').value.trim();
+
+            if (phone.length !== 10) {
+                showLoginError('Please enter a valid 10-digit phone number');
+                return;
+            }
+
+            // Store phone and show OTP step
+            currentUser = { phone: phone };
+            document.getElementById('phoneStep').classList.add('hidden');
+            document.getElementById('otpStep').classList.remove('hidden');
+            hideLoginError();
+        }
+
+        function handleOtpSubmit() {
+            const otp = document.getElementById('otpInput').value.trim();
+            const expectedOtp = currentUser.phone.slice(-4);
+
+            if (otp !== expectedOtp) {
+                showLoginError('Invalid OTP. Please try again.');
+                return;
+            }
+
+            // Login successful - fetch gardener info and jobs
+            hideLoginError();
+            showDashboard();
+        }
+
+        function backToPhone() {
+            document.getElementById('otpStep').classList.add('hidden');
+            document.getElementById('phoneStep').classList.remove('hidden');
+            document.getElementById('otpInput').value = '';
+            hideLoginError();
+        }
+
+        function showLoginError(message) {
+            const errorEl = document.getElementById('loginError');
+            errorEl.textContent = '⚠️ ' + message;
+            errorEl.classList.remove('hidden');
+        }
+
+        function hideLoginError() {
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            jobs = [];
+            document.getElementById('phoneInput').value = '';
+            document.getElementById('otpInput').value = '';
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('otpStep').classList.add('hidden');
+            document.getElementById('phoneStep').classList.remove('hidden');
+        }
+
+        // ============================================
+        // DASHBOARD
+        // ============================================
+        async function showDashboard() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+
+            // Show loading
+            document.getElementById('jobsLoading').classList.remove('hidden');
+            document.getElementById('jobsList').innerHTML = '';
+            document.getElementById('emptyState').classList.add('hidden');
+
+            try {
+                // Fetch jobs for this gardener
+                const response = await fetch(`${API_URL}?action=getGardenerJobs&phone=${currentUser.phone}`);
+                const data = await response.json();
+
+                document.getElementById('jobsLoading').classList.add('hidden');
+
+                if (data.success && data.gardener) {
+                    currentUser.name = data.gardener.name;
+                    currentUser.gardenerID = data.gardener.id;
+                    document.getElementById('welcomeText').textContent = `Welcome, ${data.gardener.name}`;
+
+                    jobs = data.jobs || [];
+                    renderJobs();
+                } else {
+                    showLoginError(data.error || 'Gardener not found');
+                    handleLogout();
+                }
+            } catch (error) {
+                console.error('Error fetching jobs:', error);
+                document.getElementById('jobsLoading').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+                document.getElementById('emptyState').innerHTML = `
+                    <div class="icon">⚠️</div>
+                    <p>Failed to load jobs. Please try again.</p>
+                `;
+            }
+        }
+
+        function renderJobs() {
+            const jobsList = document.getElementById('jobsList');
+            const pendingJobs = jobs.filter(j => j.status !== 'COMPLETED');
+
+            document.getElementById('jobCount').textContent = `${pendingJobs.length} Job${pendingJobs.length !== 1 ? 's' : ''}`;
+
+            if (jobs.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            jobsList.innerHTML = jobs.map(job => `
+                <div class="job-card ${job.status === 'COMPLETED' ? 'completed' : ''}"
+                     onclick="${job.status !== 'COMPLETED' ? `startJob('${job.id}')` : ''}">
+                    <div class="job-header">
+                        <span class="service-badge full">
+                            ${job.status === 'COMPLETED' ? '✅ COMPLETED' : '🛠️ FULL SERVICE'}
+                        </span>
+                        <span class="job-time">${job.timeSlot || 'Today'}</span>
+                    </div>
+                    <div class="job-customer">${job.customerName}</div>
+                    <div class="job-address">
+                        📍 ${job.address}
+                    </div>
+                    <div class="job-meta">
+                        <div class="job-plants">
+                            🌿 ${job.plantCount || 'N/A'} Plants
+                        </div>
+                        ${job.mapLink ? `
+                            <button class="map-btn" onclick="event.stopPropagation(); openMap('${job.mapLink}')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                                MAP
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openMap(mapLink) {
+            window.open(mapLink, '_blank');
+        }
+
+        // ============================================
+        // SERVICE FLOW
+        // ============================================
+        function startJob(jobId) {
+            currentJob = jobs.find(j => j.id === jobId);
+            if (!currentJob) return;
+
+            currentStepIndex = 0;
+            reportData = {
+                totalPlants: currentJob.plantCount || '',
+                redZonePlants: [],
+                notes: ''
+            };
+
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('serviceScreen').classList.remove('hidden');
+            renderStep();
+        }
+
+        function renderStep() {
+            const step = SERVICE_STEPS[currentStepIndex];
+            const totalSteps = SERVICE_STEPS.length;
+            const progress = ((currentStepIndex + 1) / totalSteps) * 100;
+
+            document.getElementById('stepTitle').textContent = step.title;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('nextBtn').textContent = currentStepIndex === totalSteps - 1 ? 'Complete Service' : 'Next';
+
+            if (step.isReport) {
+                renderReportForm();
+            } else {
+                document.getElementById('serviceContent').innerHTML = step.content;
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        function renderReportForm() {
+            document.getElementById('serviceContent').innerHTML = `
+                <div class="report-form">
+                    <div class="form-group">
+                        <label>Total Plants Serviced</label>
+                        <input type="number" id="totalPlantsInput" placeholder="e.g. 25"
+                               value="${reportData.totalPlants}" onchange="reportData.totalPlants = this.value">
+                    </div>
+
+                    <div class="form-group red-zone-section">
+                        <label>🚨 Red Zone Plants (Critical Issues)</label>
+                        <div class="red-zone-input">
+                            <input type="text" id="redZoneInput" placeholder="Plant name - Issue (e.g. Rose - Fungus)">
+                            <button onclick="addRedZone()">+</button>
+                        </div>
+                        <div id="redZoneList" class="red-zone-list">
+                            ${reportData.redZonePlants.map((p, i) => `
+                                <div class="red-zone-item">
+                                    <span>${p}</span>
+                                    <button onclick="removeRedZone(${i})">×</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes (Optional)</label>
+                        <textarea id="notesInput" placeholder="Any additional notes..."
+                                  onchange="reportData.notes = this.value">${reportData.notes}</textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addRedZone() {
+            const input = document.getElementById('redZoneInput');
+            if (input.value.trim()) {
+                reportData.redZonePlants.push(input.value.trim());
+                input.value = '';
+                renderReportForm();
+            }
+        }
+
+        function removeRedZone(index) {
+            reportData.redZonePlants.splice(index, 1);
+            renderReportForm();
+        }
+
+        function nextStep() {
+            if (currentStepIndex === SERVICE_STEPS.length - 1) {
+                completeService();
+            } else {
+                currentStepIndex++;
+                renderStep();
+            }
+        }
+
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderStep();
+            }
+        }
+
+        function exitService() {
+            if (confirm('Exit service? Your progress will be lost.')) {
+                document.getElementById('serviceScreen').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                currentJob = null;
+            }
+        }
+
+        // ============================================
+        // COMPLETE SERVICE
+        // ============================================
+        async function completeService() {
+            const btn = document.getElementById('nextBtn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                const payload = {
+                    action: 'saveServiceReport',
+                    bookingID: currentJob.id,
+                    gardenerID: currentUser.gardenerID,
+                    gardenerName: currentUser.name,
+                    gardenerPhone: currentUser.phone,
+                    customerName: currentJob.customerName,
+                    address: currentJob.address,
+                    totalPlants: reportData.totalPlants,
+                    redZonePlants: reportData.redZonePlants.join(', '),
+                    notes: reportData.notes,
+                    completedAt: new Date().toISOString()
+                };
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Mark job as completed locally
+                    const jobIndex = jobs.findIndex(j => j.id === currentJob.id);
+                    if (jobIndex !== -1) {
+                        jobs[jobIndex].status = 'COMPLETED';
+                    }
+
+                    showCompleteScreen();
+                } else {
+                    alert('Failed to save report: ' + (result.error || 'Unknown error'));
+                    btn.disabled = false;
+                    btn.textContent = 'Complete Service';
+                }
+            } catch (error) {
+                console.error('Error saving report:', error);
+                alert('Failed to save report. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Complete Service';
+            }
+        }
+
+        function showCompleteScreen() {
+            document.getElementById('serviceScreen').classList.add('hidden');
+            document.getElementById('completeScreen').classList.remove('hidden');
+
+            document.getElementById('completeSummary').innerHTML = `
+                <div class="row">
+                    <span class="label">Customer</span>
+                    <span class="value">${currentJob.customerName}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Plants Serviced</span>
+                    <span class="value">${reportData.totalPlants || '-'}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Red Zone Plants</span>
+                    <span class="value">${reportData.redZonePlants.length}</span>
+                </div>
+                ${reportData.notes ? `
+                    <div class="row">
+                        <span class="label">Notes</span>
+                        <span class="value">${reportData.notes}</span>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function backToDashboard() {
+            document.getElementById('completeScreen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            currentJob = null;
+            renderJobs();
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Enter key handlers
+            document.getElementById('phoneInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handlePhoneSubmit();
+            });
+            document.getElementById('otpInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleOtpSubmit();
+            });
+        });
+    </script>
+</body>
+</html>
