@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -31,6 +31,7 @@
             background: #f5f7f5;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
+            font-size: 14px;
         }
 
         .container {
@@ -1016,33 +1017,33 @@
             <div class="login-logo">
                 <div class="icon">🌱</div>
                 <h1>PotPot Partner</h1>
-                <p id="loginSubtitle">Partner App</p>
+                <p id="loginSubtitle">पार्टनर ऐप</p>
             </div>
 
             <div id="loginError" class="error-message hidden"></div>
 
             <div id="phoneStep">
                 <div class="form-group">
-                    <label>Phone Number</label>
+                    <label>फ़ोन नंबर</label>
                     <div class="input-wrapper">
                         <span class="input-icon">📱</span>
-                        <input type="tel" id="phoneInput" placeholder="Enter 10-digit number" maxlength="10">
+                        <input type="tel" id="phoneInput" placeholder="10 अंक का नंबर डालें" maxlength="10">
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="handlePhoneSubmit()">Get OTP</button>
+                <button class="btn btn-primary" onclick="handlePhoneSubmit()">OTP पाएं</button>
             </div>
 
             <div id="otpStep" class="hidden">
                 <div class="form-group">
-                    <label>Enter OTP</label>
+                    <label>OTP डालें</label>
                     <div class="input-wrapper">
                         <span class="input-icon">🔒</span>
-                        <input type="tel" id="otpInput" placeholder="Enter 4-digit OTP" maxlength="4">
+                        <input type="tel" id="otpInput" placeholder="4 अंक का OTP" maxlength="4">
                     </div>
-                    <p class="hint">OTP is the last 4 digits of your phone number</p>
+                    <p class="hint">OTP आपके फ़ोन नंबर के आखिरी 4 अंक हैं</p>
                 </div>
-                <button class="btn btn-primary" onclick="handleOtpSubmit()">Login</button>
-                <button class="btn btn-secondary" onclick="backToPhone()">Change Number</button>
+                <button class="btn btn-primary" onclick="handleOtpSubmit()">लॉगिन</button>
+                <button class="btn btn-secondary" onclick="backToPhone()">नंबर बदलें</button>
             </div>
         </div>
 
@@ -1051,28 +1052,28 @@
             <div class="dashboard-header">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h1>My Tasks</h1>
-                        <p id="welcomeText">Welcome, Gardener</p>
+                        <h1>मेरे काम</h1>
+                        <p id="welcomeText">स्वागत है</p>
                     </div>
-                    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+                    <button class="logout-btn" onclick="handleLogout()">लॉगआउट</button>
                 </div>
             </div>
 
             <div class="jobs-section">
                 <div class="section-title">
-                    <h2>Today's Visits</h2>
-                    <span id="jobCount" class="badge">0 Jobs</span>
+                    <h2>आज की विज़िट</h2>
+                    <span id="jobCount" class="badge">0 काम</span>
                 </div>
 
                 <div id="jobsLoading" class="loading">
                     <div class="spinner"></div>
-                    <p>Loading your jobs...</p>
+                    <p>लोड हो रहा है...</p>
                 </div>
 
                 <div id="jobsList"></div>
 
                 <div id="emptyState" class="empty-state hidden">
-                    <p>📋 No jobs scheduled for today</p>
+                    <p>📋 आज के लिए कोई काम नहीं है</p>
                 </div>
             </div>
         </div>
@@ -1081,9 +1082,9 @@
         <div id="serviceScreen" class="service-screen hidden">
             <div class="service-header">
                 <div class="service-header-top">
-                    <button class="exit-btn" onclick="exitService()">EXIT</button>
-                    <span id="stepTitle" class="step-title">Steps 1 & 2</span>
-                    <button class="guide-btn">📋 GUIDE</button>
+                    <button class="exit-btn" onclick="exitService()">बाहर</button>
+                    <span id="stepTitle" class="step-title">चरण 1 और 2</span>
+                    <button class="guide-btn">📋 गाइड</button>
                 </div>
                 <div class="progress-bar">
                     <div id="progressFill" class="progress-fill" style="width: 0%"></div>
@@ -1093,9 +1094,9 @@
             <div id="serviceContent" class="service-content"></div>
 
             <div class="service-footer">
-                <button class="btn btn-back" onclick="prevStep()">Back</button>
+                <button class="btn btn-back" onclick="prevStep()">पीछे</button>
                 <button id="nextBtn" class="btn btn-next" onclick="nextStep()">
-                    Next Step <span>›</span>
+                    अगला <span>›</span>
                 </button>
             </div>
         </div>
@@ -1103,12 +1104,12 @@
         <!-- ===== COMPLETE SCREEN ===== -->
         <div id="completeScreen" class="complete-screen hidden">
             <div class="complete-icon">✅</div>
-            <h1>Service Completed!</h1>
-            <p>Report has been saved successfully.</p>
+            <h1>सर्विस पूरी हुई!</h1>
+            <p>रिपोर्ट सेव हो गई।</p>
 
             <div id="completeSummary" class="complete-summary"></div>
 
-            <button class="btn btn-primary" onclick="backToDashboard()">Back to Dashboard</button>
+            <button class="btn btn-primary" onclick="backToDashboard()">वापस जाएं</button>
         </div>
 
         <!-- ===== ADMIN DASHBOARD ===== -->
@@ -1116,36 +1117,36 @@
             <div class="admin-header">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h1>📊 Admin Panel</h1>
-                        <p id="adminWelcome">Today's Schedule</p>
+                        <h1>📊 एडमिन पैनल</h1>
+                        <p id="adminWelcome">आज का शेड्यूल</p>
                     </div>
-                    <button class="logout-btn" style="color: white;" onclick="handleLogout()">Logout</button>
+                    <button class="logout-btn" style="color: white;" onclick="handleLogout()">लॉगआउट</button>
                 </div>
             </div>
 
             <div class="admin-filters">
                 <div class="filter-row">
                     <select id="gardenerFilter" class="filter-select" onchange="filterReports()">
-                        <option value="">All Gardeners</option>
+                        <option value="">सभी माली</option>
                     </select>
                 </div>
             </div>
 
             <div class="reports-section">
                 <div class="section-title">
-                    <h2>Today's Schedule</h2>
-                    <span id="reportCount" class="badge">0 Bookings</span>
+                    <h2>आज का शेड्यूल</h2>
+                    <span id="reportCount" class="badge">0 बुकिंग</span>
                 </div>
 
                 <div id="reportsLoading" class="loading">
                     <div class="spinner"></div>
-                    <p>Loading schedule...</p>
+                    <p>लोड हो रहा...</p>
                 </div>
 
                 <div id="reportsList"></div>
 
                 <div id="reportsEmpty" class="empty-state hidden">
-                    <p>📋 No bookings scheduled for today</p>
+                    <p>📋 आज के लिए कोई बुकिंग नहीं</p>
                 </div>
             </div>
         </div>
@@ -1181,33 +1182,31 @@
         const SERVICE_STEPS = [
             {
                 id: 'screen_1',
-                title: 'Steps 1 & 2',
+                title: 'स्टेप 1 और 2',
                 render: () => `
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 1: Greeting</h3>
-                            <span class="hindi">अभिवादन</span>
+                            <h3>स्टेप 1: अभिवादन</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Say: "Namaste, PotPot service" with smile.</li>
-                                <li>Ask: "Any issues since last time?" (पिछली बार से कोई समस्या?)</li>
+                                <li>मुस्कुरा कर बोलें: "नमस्ते, PotPot सर्विस"</li>
+                                <li>पूछें: "पिछली बार से कोई समस्या?"</li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 2: Before Photos</h3>
-                            <span class="hindi">पहले फोटो</span>
+                            <h3>स्टेप 2: पहले फोटो</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Take multiple wide shots of all plant areas.</li>
-                                <li>Take close-ups of any specific issues.</li>
+                                <li>सभी पौधों की wide फोटो लें</li>
+                                <li>किसी भी समस्या की close-up फोटो लें</li>
                             </ul>
                             <div class="photo-section">
-                                <div class="photo-section-label">Photos</div>
+                                <div class="photo-section-label">फोटो</div>
                                 <div class="photo-grid" id="beforePhotosGrid">
                                     ${renderPhotoGrid('beforePhotos')}
                                 </div>
@@ -1218,35 +1217,33 @@
             },
             {
                 id: 'screen_2',
-                title: 'Steps 3 & 4',
+                title: 'स्टेप 3 और 4',
                 render: () => `
                     <div class="warning-box">
-                        ⚠️ 🚫 Clean blade between plants! Never remove >30% of plant.
+                        ⚠️ हर पौधे के बाद ब्लेड साफ करें! 30% से ज़्यादा मत काटें
                     </div>
 
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 3: Pruning</h3>
-                            <span class="hindi">छंटाई</span>
+                            <h3>स्टेप 3: छंटाई</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Cut main stem tip to make plant bushy.</li>
-                                <li>Cut 1cm above node at 45°.</li>
-                                <li>Remove yellow/dead leaves and dead flowers.</li>
+                                <li>पौधे को घना बनाने के लिए मुख्य तना काटें</li>
+                                <li>गांठ से 1cm ऊपर 45° पर काटें</li>
+                                <li>पीली/सूखी पत्तियां और मुरझाए फूल हटाएं</li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 4: Soil Loosening</h3>
-                            <span class="hindi">गुड़ाई</span>
+                            <h3>स्टेप 4: गुड़ाई</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Dig top 2-3 cm around edges of pot.</li>
-                                <li>Do NOT dig deep near the center (protect roots).</li>
+                                <li>गमले के किनारों पर 2-3 cm मिट्टी खोदें</li>
+                                <li>बीच में गहरा मत खोदें (जड़ें बचाएं)</li>
                             </ul>
                         </div>
                     </div>
@@ -1254,67 +1251,65 @@
             },
             {
                 id: 'screen_3',
-                title: 'Step 5',
+                title: 'स्टेप 5',
                 render: () => `
                     <div class="neutral-box">
-                        Compare each plant and treat accordingly.
+                        हर पौधे को देखें और उसके हिसाब से treat करें
                     </div>
 
                     <div class="info-box">
-                        ℹ️ Nov-Feb: NO fertilizer for anyone.
+                        ℹ️ नवंबर-फरवरी: किसी को भी खाद नहीं देनी
                     </div>
 
                     <div class="health-card healthy">
-                        <h3>🌿 Healthy Plants</h3>
+                        <h3>🌿 स्वस्थ पौधे</h3>
                         <ul>
-                            <li>Apply Fertilizers (Vermi + Coco + DAP)</li>
-                            <li>Plain water spray on leaves</li>
-                            <li>Wipe leaves clean with damp cloth</li>
+                            <li>खाद डालें (Vermi + Coco + DAP)</li>
+                            <li>पत्तियों पर सादा पानी स्प्रे करें</li>
+                            <li>गीले कपड़े से पत्तियां पोंछें</li>
                         </ul>
                     </div>
 
                     <div class="health-card infected">
-                        <h3>🐛 Infected Plants</h3>
+                        <h3>🐛 बीमार पौधे</h3>
                         <ul>
-                            <li>Apply Pesticides (Neem / SAAF)</li>
-                            <li>Medicine spray on leaves</li>
-                            <li><strong>NO FERTILIZER</strong></li>
-                            <li><strong>DO NOT WIPE leaves</strong></li>
+                            <li>दवाई डालें (Neem / SAAF)</li>
+                            <li>पत्तियों पर दवाई स्प्रे करें</li>
+                            <li><strong>खाद नहीं देनी</strong></li>
+                            <li><strong>पत्तियां मत पोंछें</strong></li>
                         </ul>
                     </div>
                 `
             },
             {
                 id: 'screen_4',
-                title: 'Steps 6 & 7',
+                title: 'स्टेप 6 और 7',
                 render: () => `
                     <div class="warning-box">
-                        ⚠️ If infected: Do NOT wipe leaves, only clean pot.
+                        ⚠️ बीमार पौधे: पत्तियां मत पोंछें, सिर्फ गमला साफ करें
                     </div>
 
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 6: Cleaning</h3>
-                            <span class="hindi">सफाई</span>
+                            <h3>स्टेप 6: सफाई</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Wipe large leaves with damp cloth.</li>
-                                <li>Wipe pot exterior and saucer.</li>
+                                <li>बड़ी पत्तियां गीले कपड़े से पोंछें</li>
+                                <li>गमला और प्लेट बाहर से साफ करें</li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 7: Watering</h3>
-                            <span class="hindi">पानी देना</span>
+                            <h3>स्टेप 7: पानी देना</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Check moisture meter first!</li>
-                                <li>Water at soil level until drainage.</li>
-                                <li>Empty saucer after 30 mins.</li>
+                                <li>पहले moisture meter चेक करें!</li>
+                                <li>मिट्टी में पानी दें जब तक नीचे से न निकले</li>
+                                <li>30 मिनट बाद प्लेट खाली करें</li>
                             </ul>
                         </div>
                     </div>
@@ -1322,29 +1317,27 @@
             },
             {
                 id: 'screen_5',
-                title: 'Steps 8 & 9',
+                title: 'स्टेप 8 और 9',
                 render: () => `
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 8: Floor & Drainage</h3>
-                            <span class="hindi">फर्श और ड्रेनेज</span>
+                            <h3>स्टेप 8: फर्श और ड्रेनेज</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Ensure every pot has a hole.</li>
-                                <li>Sweep fallen leaves/soil. Wipe water spills.</li>
+                                <li>हर गमले में छेद होना चाहिए</li>
+                                <li>गिरी पत्तियां/मिट्टी साफ करें, पानी पोंछें</li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 9: Garbage</h3>
-                            <span class="hindi">कचरा</span>
+                            <h3>स्टेप 9: कचरा</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Take all green waste with you.</li>
+                                <li>सारा हरा कचरा अपने साथ ले जाएं</li>
                             </ul>
                         </div>
                     </div>
@@ -1352,20 +1345,19 @@
             },
             {
                 id: 'screen_6',
-                title: 'Step 10',
+                title: 'स्टेप 10',
                 render: () => `
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 10: After Photos</h3>
-                            <span class="hindi">बाद की फोटो</span>
+                            <h3>स्टेप 10: बाद की फोटो</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Take photos from same angles.</li>
-                                <li>Show clean plants, clean pots, clean floor.</li>
+                                <li>उसी angle से फोटो लें</li>
+                                <li>साफ पौधे, साफ गमले, साफ फर्श दिखाएं</li>
                             </ul>
                             <div class="photo-section">
-                                <div class="photo-section-label">Photos</div>
+                                <div class="photo-section-label">फोटो</div>
                                 <div class="photo-grid" id="afterPhotosGrid">
                                     ${renderPhotoGrid('afterPhotos')}
                                 </div>
@@ -1376,30 +1368,28 @@
             },
             {
                 id: 'screen_7',
-                title: 'Steps 11 & 12',
+                title: 'स्टेप 11 और 12',
                 render: () => `
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 11: Care Tips</h3>
-                            <span class="hindi">टिप्स</span>
+                            <h3>स्टेप 11: टिप्स</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Explain medicines to customer.</li>
-                                <li>Answer questions.</li>
+                                <li>कस्टमर को दवाइयों के बारे में बताएं</li>
+                                <li>उनके सवालों का जवाब दें</li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="step-card">
                         <div class="step-card-header">
-                            <h3>Step 12: Schedule</h3>
-                            <span class="hindi">अगला चेक-अप</span>
+                            <h3>स्टेप 12: अगला चेक-अप</h3>
                         </div>
                         <div class="step-card-body">
                             <ul>
-                                <li>Say: "4-5 दिन बाद हम आएंगे फ्री चेक-अप के लिए!"</li>
-                                <li>Next Full Service in ~25-30 days.</li>
+                                <li>बोलें: "4-5 दिन बाद हम आएंगे फ्री चेक-अप के लिए!"</li>
+                                <li>अगली Full Service ~25-30 दिन में</li>
                             </ul>
                         </div>
                     </div>
@@ -1407,21 +1397,21 @@
             },
             {
                 id: 'screen_8',
-                title: 'Final Report',
+                title: 'फाइनल रिपोर्ट',
                 isLast: true,
                 render: () => `
                     <div class="report-card">
                         <div class="report-field">
-                            <label>Total Plants Serviced</label>
+                            <label>कुल पौधे सर्विस किए</label>
                             <input type="number" class="report-input" id="totalPlantsInput"
-                                   placeholder="e.g. 25" value="${reportData.totalPlants}"
+                                   placeholder="जैसे: 25" value="${reportData.totalPlants}"
                                    onchange="reportData.totalPlants = this.value">
                         </div>
 
                         <div class="report-field">
-                            <label class="red">Red Zone Plants (Critical)</label>
+                            <label class="red">बीमार पौधे (Red Zone)</label>
                             <textarea class="red-zone-textarea" id="redZonePlantsInput"
-                                      placeholder="Write any sick/infected plants here...&#10;e.g. Rose - Fungus, Money Plant - Yellow leaves"
+                                      placeholder="बीमार/संक्रमित पौधे यहां लिखें...&#10;जैसे: गुलाब - फंगस, मनी प्लांट - पीली पत्तियां"
                                       onchange="reportData.redZonePlants = this.value">${reportData.redZonePlants}</textarea>
                         </div>
                     </div>
@@ -1448,7 +1438,7 @@
                         <circle cx="8.5" cy="8.5" r="1.5"></circle>
                         <polyline points="21 15 16 10 5 21"></polyline>
                     </svg>
-                    <span>Add</span>
+                    <span>जोड़ें</span>
                     <input type="file" accept="image/*" capture="environment" style="display:none"
                            onchange="addPhoto('${type}', this)">
                 </label>
@@ -1465,7 +1455,7 @@
                 const grid = document.getElementById(type === 'beforePhotos' ? 'beforePhotosGrid' : 'afterPhotosGrid');
                 const uploadingDiv = document.createElement('div');
                 uploadingDiv.className = 'photo-item uploading';
-                uploadingDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:12px;">Uploading...</div>';
+                uploadingDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:12px;">अपलोड हो रहा...</div>';
                 grid.insertBefore(uploadingDiv, grid.lastElementChild);
 
                 try {
@@ -1484,7 +1474,7 @@
                     renderStep();
                 } catch (error) {
                     console.error('Upload error:', error);
-                    alert('Failed to upload photo. Please try again.');
+                    alert('फोटो अपलोड नहीं हुई। कृपया फिर कोशिश करें।');
                     uploadingDiv.remove();
                 }
             }
@@ -1501,7 +1491,7 @@
         function handlePhoneSubmit() {
             const phone = document.getElementById('phoneInput').value.trim();
             if (phone.length !== 10) {
-                showLoginError('Please enter a valid 10-digit phone number');
+                showLoginError('कृपया सही 10 अंकों का नंबर डालें');
                 return;
             }
             currentUser = { phone: phone };
@@ -1514,7 +1504,7 @@
             const otp = document.getElementById('otpInput').value.trim();
             const expectedOtp = currentUser.phone.slice(-4);
             if (otp !== expectedOtp) {
-                showLoginError('Invalid OTP. Please try again.');
+                showLoginError('गलत OTP। कृपया फिर कोशिश करें।');
                 return;
             }
             hideLoginError();
@@ -1537,7 +1527,7 @@
 
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('adminDashboard').classList.remove('hidden');
-                    document.getElementById('adminWelcome').textContent = `Welcome, ${adminData.adminName}`;
+                    document.getElementById('adminWelcome').textContent = `नमस्ते, ${adminData.adminName}`;
 
                     // Hide loading, show content
                     document.getElementById('reportsLoading').classList.add('hidden');
@@ -1614,11 +1604,11 @@
                     currentUser.name = data.gardener.name;
                     currentUser.gardenerID = data.gardener.id;
                     saveSession(currentUser);
-                    document.getElementById('welcomeText').textContent = `Welcome, ${data.gardener.name}`;
+                    document.getElementById('welcomeText').textContent = `नमस्ते, ${data.gardener.name}`;
                     jobs = data.jobs || [];
                     renderJobs();
                 } else {
-                    showLoginError(data.error || 'Gardener not found');
+                    showLoginError(data.error || 'माली नहीं मिला');
                     handleLogout();
                 }
             } catch (error) {
@@ -1631,7 +1621,7 @@
         function renderJobs() {
             const jobsList = document.getElementById('jobsList');
             const pendingJobs = jobs.filter(j => j.status !== 'COMPLETED');
-            document.getElementById('jobCount').textContent = `${pendingJobs.length} Job${pendingJobs.length !== 1 ? 's' : ''}`;
+            document.getElementById('jobCount').textContent = `${pendingJobs.length} काम`;
 
             if (jobs.length === 0) {
                 document.getElementById('emptyState').classList.remove('hidden');
@@ -1644,20 +1634,20 @@
                      ${job.status !== 'COMPLETED' ? 'data-clickable="true"' : ''}>
                     <div class="job-header">
                         <span class="service-badge">
-                            ${job.status === 'COMPLETED' ? '✅ COMPLETED' : '🛠️ FULL SERVICE'}
+                            ${job.status === 'COMPLETED' ? '✅ पूरा हुआ' : '🛠️ फुल सर्विस'}
                         </span>
-                        <span class="job-time">${job.timeSlot || 'Today'}</span>
+                        <span class="job-time">${job.timeSlot || 'आज'}</span>
                     </div>
                     <div class="job-customer">${job.customerName}</div>
                     <div class="job-address">📍 ${job.address}</div>
-                    <div class="job-plants">🌿 ${job.plantCount || 'N/A'} Plants</div>
+                    <div class="job-plants">🌿 ${job.plantCount || '-'} पौधे</div>
                     ${job.mapLink ? `
                         <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
-                            MAP
+                            नक्शा
                         </button>
                     ` : ''}
                 </div>
@@ -1713,9 +1703,9 @@
 
             const nextBtn = document.getElementById('nextBtn');
             if (step.isLast) {
-                nextBtn.innerHTML = 'Complete Job <span>›</span>';
+                nextBtn.innerHTML = 'काम पूरा करें <span>›</span>';
             } else {
-                nextBtn.innerHTML = 'Next Step <span>›</span>';
+                nextBtn.innerHTML = 'अगला स्टेप <span>›</span>';
             }
 
             window.scrollTo(0, 0);
@@ -1751,7 +1741,7 @@
         async function completeService() {
             const btn = document.getElementById('nextBtn');
             btn.disabled = true;
-            btn.innerHTML = 'Saving...';
+            btn.innerHTML = 'सेव हो रहा...';
 
             try {
                 const payload = {
@@ -1782,15 +1772,15 @@
                     if (jobIndex !== -1) jobs[jobIndex].status = 'COMPLETED';
                     showCompleteScreen();
                 } else {
-                    alert('Failed to save: ' + (result.error || 'Unknown error'));
+                    alert('सेव नहीं हुआ: ' + (result.error || 'अज्ञात त्रुटि'));
                     btn.disabled = false;
-                    btn.innerHTML = 'Complete Job <span>›</span>';
+                    btn.innerHTML = 'काम पूरा करें <span>›</span>';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Failed to save. Please try again.');
+                alert('सेव नहीं हुआ। कृपया फिर कोशिश करें।');
                 btn.disabled = false;
-                btn.innerHTML = 'Complete Job <span>›</span>';
+                btn.innerHTML = 'काम पूरा करें <span>›</span>';
             }
         }
 
@@ -1800,16 +1790,16 @@
 
             document.getElementById('completeSummary').innerHTML = `
                 <div class="row">
-                    <span class="label">Customer</span>
+                    <span class="label">कस्टमर</span>
                     <span class="value">${currentJob.customerName}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Plants Serviced</span>
+                    <span class="label">सर्विस किए पौधे</span>
                     <span class="value">${reportData.totalPlants || '-'}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Red Zone Plants</span>
-                    <span class="value">${reportData.redZonePlants ? 'Yes' : 'None'}</span>
+                    <span class="label">बीमार पौधे</span>
+                    <span class="value">${reportData.redZonePlants ? 'हां' : 'नहीं'}</span>
                 </div>
             `;
         }
@@ -1826,7 +1816,7 @@
         // ============================================
         function populateGardenerFilter() {
             const select = document.getElementById('gardenerFilter');
-            select.innerHTML = '<option value="">All Gardeners</option>';
+            select.innerHTML = '<option value="">सभी माली</option>';
             gardenersList.forEach(g => {
                 select.innerHTML += `<option value="${g.id}">${g.name}</option>`;
             });
@@ -1846,7 +1836,7 @@
 
         function renderBookings() {
             const reportsList = document.getElementById('reportsList');
-            document.getElementById('reportCount').textContent = `${filteredReports.length} Booking${filteredReports.length !== 1 ? 's' : ''}`;
+            document.getElementById('reportCount').textContent = `${filteredReports.length} बुकिंग`;
 
             if (filteredReports.length === 0) {
                 reportsList.innerHTML = '';
@@ -1860,17 +1850,17 @@
                 return `
                     <div class="report-card-admin">
                         <div class="report-card-header">
-                            <span class="report-gardener">👤 ${booking.gardenerName || 'Unassigned'}</span>
+                            <span class="report-gardener">👤 ${booking.gardenerName || 'कोई माली नहीं'}</span>
                             <span class="report-date">${booking.timeSlot || '-'}</span>
                         </div>
                         <div class="report-customer">${booking.customerName || '-'}</div>
                         <div class="report-address">📍 ${booking.address || '-'}</div>
                         <div class="report-stats">
-                            <span class="report-stat">🌿 ${booking.plantCount || '-'} plants</span>
-                            <span class="report-stat ${booking.status === 'COMPLETED' ? '' : 'red'}">${booking.status === 'COMPLETED' ? '✅ Done' : '⏳ Pending'}</span>
+                            <span class="report-stat">🌿 ${booking.plantCount || '-'} पौधे</span>
+                            <span class="report-stat ${booking.status === 'COMPLETED' ? '' : 'red'}">${booking.status === 'COMPLETED' ? '✅ पूरा' : '⏳ बाकी'}</span>
                         </div>
                         ${booking.mapLink ? `
-                            <a href="javascript:void(0)" onclick="openMapLocation('${booking.mapLink}')" style="display: inline-block; margin-top: 10px; color: #1565c0; font-size: 13px;">📍 Open Map</a>
+                            <a href="javascript:void(0)" onclick="openMapLocation('${booking.mapLink}')" style="display: inline-block; margin-top: 10px; color: #1565c0; font-size: 13px;">📍 नक्शा खोलें</a>
                         ` : ''}
                     </div>
                 `;
@@ -1923,7 +1913,7 @@
             if (session.isAdmin) {
                 // Show admin dashboard immediately
                 document.getElementById('adminDashboard').classList.remove('hidden');
-                document.getElementById('adminWelcome').textContent = `Welcome, ${session.name || 'Admin'}`;
+                document.getElementById('adminWelcome').textContent = `नमस्ते, ${session.name || 'एडमिन'}`;
 
                 // Fetch fresh data
                 try {
@@ -1951,7 +1941,7 @@
             } else {
                 // Show gardener dashboard immediately
                 document.getElementById('dashboard').classList.remove('hidden');
-                document.getElementById('welcomeText').textContent = `Welcome, ${session.name || 'Gardener'}`;
+                document.getElementById('welcomeText').textContent = `नमस्ते, ${session.name || 'माली'}`;
 
                 // Fetch fresh data
                 try {
@@ -1966,7 +1956,7 @@
                             gardenerID: data.gardener.id
                         };
                         saveSession(currentUser);
-                        document.getElementById('welcomeText').textContent = `Welcome, ${data.gardener.name}`;
+                        document.getElementById('welcomeText').textContent = `नमस्ते, ${data.gardener.name}`;
                         jobs = data.jobs || [];
                         renderJobs();
                     } else {
