@@ -247,8 +247,9 @@
         .job-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             margin-bottom: 12px;
+            gap: 12px;
         }
 
         .service-badge {
@@ -339,7 +340,6 @@
             font-size: 18px;
             font-weight: 700;
             color: #333;
-            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -350,11 +350,6 @@
             color: #666;
             margin-bottom: 10px;
             line-height: 1.4;
-            padding-right: 70px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
         }
 
         .job-plants {
@@ -370,28 +365,22 @@
         }
 
         .map-btn {
-            position: absolute;
-            right: 16px;
-            bottom: 16px;
-            width: 64px;
-            height: 64px;
-            background: #e3f2fd;
-            color: #1565c0;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            font-size: 11px;
+            gap: 6px;
+            background: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 8px 14px;
+            font-size: 13px;
             font-weight: 700;
         }
 
         .map-btn svg {
-            width: 26px;
-            height: 26px;
-            margin-bottom: 3px;
+            width: 18px;
+            height: 18px;
         }
 
         .empty-state, .loading {
@@ -1796,31 +1785,33 @@
                      data-job-index="${index}"
                      ${status !== 'completed' ? 'data-clickable="true"' : ''}>
                     <div class="job-header">
+                        <div class="job-customer">${job.customerName}</div>
                         <span class="service-badge">
                             ${status === 'completed' ? '✅ DONE' : status === 'ongoing' ? '🔄 IN PROGRESS' : '🛠️ FULL SERVICE'}
                         </span>
                     </div>
-                    <div class="job-customer">${job.customerName}</div>
                     <div class="job-time">
                         <span class="job-time-icon">🕐</span>
                         ${job.timeSlot || 'Today'}
                     </div>
                     <div class="job-address">📍 ${job.address}</div>
-                    <div class="job-plants">🪴 ${job.plantCount || 'N/A'} plants</div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div class="job-plants">🪴 ${job.plantCount || 'N/A'} plants</div>
+                        ${job.mapLink ? `
+                            <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                                Open Map
+                            </button>
+                        ` : ''}
+                    </div>
                     ${job.notes ? `
                         <div class="job-notes">
                             <div class="job-notes-label">📝 Notes</div>
                             ${job.notes}
                         </div>
-                    ` : ''}
-                    ${job.mapLink ? `
-                        <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                            MAP
-                        </button>
                     ` : ''}
                 </div>
             `;
