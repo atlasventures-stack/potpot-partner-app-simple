@@ -336,38 +336,38 @@
         }
 
         .job-customer {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             color: #333;
-            margin-bottom: 4px;
         }
 
-        .job-meta {
+        .job-info-row {
             display: flex;
             align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 10px;
         }
 
-        .job-time {
+        .job-info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
             font-size: 13px;
+            color: #555;
+        }
+
+        .job-info-item.time {
             color: #2e7d32;
             font-weight: 600;
-        }
-
-        .job-plants-inline {
-            font-size: 13px;
-            color: #666;
-            font-weight: 500;
         }
 
         .job-actions {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 14px;
-            padding-top: 14px;
-            border-top: 1px solid #eee;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f0f0f0;
         }
 
         .btn-start {
@@ -379,9 +379,9 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            padding: 10px 18px;
+            padding: 10px 20px;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 600;
         }
 
         .btn-start:active {
@@ -393,19 +393,18 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #1565c0;
-            color: white;
+            background: #e3f2fd;
+            color: #1565c0;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 700;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
         }
 
-        .map-btn svg {
-            width: 18px;
-            height: 18px;
+        .map-btn:active {
+            background: #bbdefb;
         }
 
         .empty-state, .loading {
@@ -1806,19 +1805,16 @@
 
             // Render job card helper
             const renderJobCard = (job, index, status) => `
-                <div class="job-card ${status}"
-                     data-job-index="${index}">
+                <div class="job-card ${status}" data-job-index="${index}">
                     <div class="job-header">
-                        <div>
-                            <div class="job-customer">${job.customerName}</div>
-                            <div class="job-meta">
-                                <span class="job-time">🕐 ${job.timeSlot || 'Today'}</span>
-                                <span class="job-plants-inline">🪴 ${job.plantCount || 'N/A'} plants</span>
-                            </div>
-                        </div>
+                        <div class="job-customer">${job.customerName}</div>
                         <span class="service-badge">
-                            ${status === 'completed' ? '✅ DONE' : status === 'ongoing' ? '🔄 IN PROGRESS' : '🛠️ FULL SERVICE'}
+                            ${status === 'completed' ? '✅ DONE' : status === 'ongoing' ? '🔄 ONGOING' : '🛠️ SERVICE'}
                         </span>
+                    </div>
+                    <div class="job-info-row">
+                        <span class="job-info-item time">🕐 ${job.timeSlot || 'Today'}</span>
+                        <span class="job-info-item">🪴 ${job.plantCount || 'N/A'} plants</span>
                     </div>
                     ${job.notes ? `
                         <div class="job-notes">
@@ -1826,22 +1822,18 @@
                             ${job.notes}
                         </div>
                     ` : ''}
-                    <div class="job-actions">
-                        ${status !== 'completed' ? `
-                            <button class="btn-start" data-clickable="true">
-                                ${status === 'ongoing' ? '▶️ Continue Visit' : '▶️ Start Visit'}
+                    ${status !== 'completed' ? `
+                        <div class="job-actions">
+                            <button class="btn-start">
+                                ${status === 'ongoing' ? '▶️ Continue' : '▶️ Start Visit'}
                             </button>
-                        ` : '<span></span>'}
-                        ${job.mapLink ? `
-                            <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                    <circle cx="12" cy="10" r="3"></circle>
-                                </svg>
-                                Open Map
-                            </button>
-                        ` : ''}
-                    </div>
+                            ${job.mapLink ? `
+                                <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
+                                    📍 Open Map
+                                </button>
+                            ` : ''}
+                        </div>
+                    ` : ''}
                 </div>
             `;
 
