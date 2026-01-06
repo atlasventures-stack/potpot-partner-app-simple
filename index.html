@@ -1809,27 +1809,27 @@
                     <div class="job-header">
                         <div class="job-customer">${job.customerName}</div>
                         <span class="service-badge">
-                            ${status === 'completed' ? '✅ पूर्ण' : status === 'ongoing' ? '🔄 जारी' : '🛠️ सर्विस'}
+                            ${status === 'completed' ? '✅ Done' : status === 'ongoing' ? '🔄 Ongoing' : '🛠️ Service'}
                         </span>
                     </div>
                     <div class="job-info-row">
                         <span class="job-info-item time">🕐 ${job.timeSlot || 'Today'}</span>
-                        <span class="job-info-item">🪴 ${job.plantCount || 'N/A'} पौधे</span>
+                        <span class="job-info-item">🪴 ${job.plantCount || 'N/A'} plants</span>
                     </div>
                     ${job.notes ? `
                         <div class="job-notes">
-                            <div class="job-notes-label">📝 नोट्स</div>
+                            <div class="job-notes-label">📝 Notes</div>
                             ${job.notes}
                         </div>
                     ` : ''}
                     ${status !== 'completed' ? `
                         <div class="job-actions">
                             <button class="btn-start">
-                                ${status === 'ongoing' ? '▶️ जारी रखें' : '▶️ शुरू करें'}
+                                ${status === 'ongoing' ? '▶️ Continue (जारी)' : '▶️ Start (शुरू)'}
                             </button>
                             ${job.mapLink ? `
                                 <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
-                                    📍 मैप खोलें
+                                    📍 Map (मैप)
                                 </button>
                             ` : ''}
                         </div>
