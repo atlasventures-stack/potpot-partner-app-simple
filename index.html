@@ -229,14 +229,7 @@
             margin-bottom: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             border: 2px solid transparent;
-            cursor: pointer;
             transition: all 0.2s;
-            position: relative;
-        }
-
-        .job-card:active {
-            border-color: #4caf50;
-            transform: scale(0.98);
         }
 
         .job-card.completed {
@@ -340,28 +333,54 @@
             font-size: 18px;
             font-weight: 700;
             color: #333;
+            margin-bottom: 4px;
+        }
+
+        .job-meta {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .job-address {
+        .job-time {
+            font-size: 13px;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .job-plants-inline {
             font-size: 13px;
             color: #666;
-            margin-bottom: 10px;
-            line-height: 1.4;
+            font-weight: 500;
         }
 
-        .job-plants {
+        .job-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-start {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 13px;
-            color: #2e7d32;
-            background: #e8f5e9;
-            padding: 6px 12px;
+            background: #4caf50;
+            color: white;
+            border: none;
             border-radius: 8px;
-            font-weight: 600;
+            cursor: pointer;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .btn-start:active {
+            background: #43a047;
+            transform: scale(0.98);
         }
 
         .map-btn {
@@ -1782,21 +1801,31 @@
             // Render job card helper
             const renderJobCard = (job, index, status) => `
                 <div class="job-card ${status}"
-                     data-job-index="${index}"
-                     ${status !== 'completed' ? 'data-clickable="true"' : ''}>
+                     data-job-index="${index}">
                     <div class="job-header">
-                        <div class="job-customer">${job.customerName}</div>
+                        <div>
+                            <div class="job-customer">${job.customerName}</div>
+                            <div class="job-meta">
+                                <span class="job-time">🕐 ${job.timeSlot || 'Today'}</span>
+                                <span class="job-plants-inline">🪴 ${job.plantCount || 'N/A'} plants</span>
+                            </div>
+                        </div>
                         <span class="service-badge">
                             ${status === 'completed' ? '✅ DONE' : status === 'ongoing' ? '🔄 IN PROGRESS' : '🛠️ FULL SERVICE'}
                         </span>
                     </div>
-                    <div class="job-time">
-                        <span class="job-time-icon">🕐</span>
-                        ${job.timeSlot || 'Today'}
-                    </div>
-                    <div class="job-address">📍 ${job.address}</div>
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div class="job-plants">🪴 ${job.plantCount || 'N/A'} plants</div>
+                    ${job.notes ? `
+                        <div class="job-notes">
+                            <div class="job-notes-label">📝 Notes</div>
+                            ${job.notes}
+                        </div>
+                    ` : ''}
+                    <div class="job-actions">
+                        ${status !== 'completed' ? `
+                            <button class="btn-start" data-clickable="true">
+                                ${status === 'ongoing' ? '▶️ Continue Visit' : '▶️ Start Visit'}
+                            </button>
+                        ` : '<span></span>'}
                         ${job.mapLink ? `
                             <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1807,12 +1836,6 @@
                             </button>
                         ` : ''}
                     </div>
-                    ${job.notes ? `
-                        <div class="job-notes">
-                            <div class="job-notes-label">📝 Notes</div>
-                            ${job.notes}
-                        </div>
-                    ` : ''}
                 </div>
             `;
 
@@ -1846,11 +1869,12 @@
 
             jobsList.innerHTML = html;
 
-            // Attach click handlers properly
-            document.querySelectorAll('.job-card[data-clickable="true"]').forEach(card => {
-                card.addEventListener('click', function(e) {
-                    if (e.target.closest('.map-btn')) return; // Don't trigger on map button click
-                    const index = parseInt(this.dataset.jobIndex);
+            // Attach click handlers for start/continue button
+            document.querySelectorAll('.btn-start[data-clickable="true"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const card = this.closest('.job-card');
+                    const index = parseInt(card.dataset.jobIndex);
                     const job = jobs[index];
                     if (job) startJob(job.id);
                 });
