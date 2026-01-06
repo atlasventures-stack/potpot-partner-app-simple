@@ -1809,25 +1809,27 @@
                     <div class="job-header">
                         <div class="job-customer">${job.customerName}</div>
                         <span class="service-badge">
-                            ${status === 'completed' ? '✅ DONE' : status === 'ongoing' ? '🔄 ONGOING' : '🛠️ SERVICE'}
+                            ${status === 'completed' ? '✅ पूर्ण' : status === 'ongoing' ? '🔄 जारी' : '🛠️ सर्विस'}
                         </span>
                     </div>
                     <div class="job-info-row">
                         <span class="job-info-item time">🕐 ${job.timeSlot || 'Today'}</span>
-                        <span class="job-info-item">🪴 ${job.plantCount || 'N/A'} plants</span>
+                        <span class="job-info-item">🪴 ${job.plantCount || 'N/A'} पौधे</span>
                     </div>
-                    <div class="job-notes">
-                        <div class="job-notes-label">📝 Notes</div>
-                        ${job.notes || 'Sample note for testing UI - Customer prefers morning visits, has 2 dogs in the house'}
-                    </div>
+                    ${job.notes ? `
+                        <div class="job-notes">
+                            <div class="job-notes-label">📝 नोट्स</div>
+                            ${job.notes}
+                        </div>
+                    ` : ''}
                     ${status !== 'completed' ? `
                         <div class="job-actions">
                             <button class="btn-start">
-                                ${status === 'ongoing' ? '▶️ Continue' : '▶️ Start Visit'}
+                                ${status === 'ongoing' ? '▶️ जारी रखें' : '▶️ शुरू करें'}
                             </button>
                             ${job.mapLink ? `
                                 <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
-                                    📍 Open Map
+                                    📍 मैप खोलें
                                 </button>
                             ` : ''}
                         </div>
