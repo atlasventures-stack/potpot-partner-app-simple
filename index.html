@@ -229,7 +229,13 @@
             margin-bottom: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             border: 2px solid transparent;
+            cursor: pointer;
             transition: all 0.2s;
+        }
+
+        .job-card:active {
+            border-color: #4caf50;
+            transform: scale(0.98);
         }
 
         .job-card.completed {
@@ -1869,12 +1875,11 @@
 
             jobsList.innerHTML = html;
 
-            // Attach click handlers for start/continue button
-            document.querySelectorAll('.btn-start[data-clickable="true"]').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const card = this.closest('.job-card');
-                    const index = parseInt(card.dataset.jobIndex);
+            // Attach click handlers for card (except completed)
+            document.querySelectorAll('.job-card:not(.completed)').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('.map-btn')) return; // Don't trigger on map button
+                    const index = parseInt(this.dataset.jobIndex);
                     const job = jobs[index];
                     if (job) startJob(job.id);
                 });
