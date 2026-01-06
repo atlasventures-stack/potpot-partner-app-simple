@@ -1795,7 +1795,7 @@
                         ${job.timeSlot || 'Today'}
                     </div>
                     <div class="job-address">📍 ${job.address}</div>
-                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div class="job-plants">🪴 ${job.plantCount || 'N/A'} plants</div>
                         ${job.mapLink ? `
                             <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
