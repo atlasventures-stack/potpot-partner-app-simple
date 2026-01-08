@@ -952,6 +952,89 @@
             color: #333;
         }
 
+        /* Payment QR Section */
+        .payment-section {
+            width: 100%;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .payment-section h2 {
+            font-size: 18px;
+            color: #1565c0;
+            margin-bottom: 8px;
+        }
+
+        .payment-amount {
+            font-size: 36px;
+            font-weight: 700;
+            color: #0d47a1;
+            margin-bottom: 16px;
+        }
+
+        .payment-qr {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .payment-qr img {
+            width: 200px;
+            height: 200px;
+        }
+
+        .payment-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .payment-status.pending {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .payment-status.paid {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .payment-status .spinner-small {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e65100;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .payment-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 12px;
+        }
+
+        .skip-payment-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 16px;
+            text-decoration: underline;
+        }
+
         /* ===== ADMIN DASHBOARD ===== */
         .admin-dashboard {
             min-height: 100vh;
@@ -1233,9 +1316,24 @@
             <h1>Service Completed! <span class="hindi">(सर्विस पूरी हुई!)</span></h1>
             <p>Report has been saved successfully. <span class="hindi">(रिपोर्ट सेव हो गई।)</span></p>
 
+            <!-- Payment Section -->
+            <div id="paymentSection" class="payment-section">
+                <h2>Collect Payment <span class="hindi">(पेमेंट लें)</span></h2>
+                <div id="paymentAmount" class="payment-amount">₹0</div>
+                <div class="payment-qr">
+                    <img id="paymentQR" src="" alt="Payment QR">
+                </div>
+                <div id="paymentStatus" class="payment-status pending">
+                    <div class="spinner-small"></div>
+                    <span>Waiting for payment... <span class="hindi">(पेमेंट का इंतज़ार...)</span></span>
+                </div>
+                <p class="payment-hint">Customer can scan this QR to pay <span class="hindi">(कस्टमर इस QR को स्कैन करके पे करें)</span></p>
+                <button class="skip-payment-btn" onclick="skipPayment()">Skip / Pay Later <span class="hindi">(बाद में पेमेंट)</span></button>
+            </div>
+
             <div id="completeSummary" class="complete-summary"></div>
 
-            <button class="btn btn-primary" onclick="backToDashboard()">Back to Dashboard <span class="hindi">(वापस जाएं)</span></button>
+            <button id="backToDashboardBtn" class="btn btn-primary" onclick="backToDashboard()">Back to Dashboard <span class="hindi">(वापस जाएं)</span></button>
         </div>
 
         <!-- ===== ADMIN DASHBOARD ===== -->
@@ -1807,11 +1905,15 @@
             const renderJobCard = (job, index, status) => `
                 <div class="job-card ${status}" data-job-index="${index}">
                     <div class="job-header">
-                        <div class="job-customer">${job.customerName}</div>
+                        <div class="job-customer">
+                            ${job.customerName}
+                            ${job.customerPhone ? `<a href="tel:${job.customerPhone}" onclick="event.stopPropagation();" style="margin-left: 8px; color: #4caf50; text-decoration: none;">📞</a>` : ''}
+                        </div>
                         <span class="service-badge">
                             ${status === 'completed' ? '✅ Done' : status === 'ongoing' ? '🔄 Ongoing' : '🛠️ Service'}
                         </span>
                     </div>
+                    <div class="job-address" style="font-size: 13px; color: #666; margin: 12px 0 14px 0; line-height: 1.4;">📍 ${job.address || '-'}</div>
                     <div class="job-info-row">
                         <span class="job-info-item time">🕐 ${job.timeSlot || 'Today'}</span>
                         <span class="job-info-item">🪴 ${job.plantCount || 'N/A'} plants</span>
@@ -2066,6 +2168,7 @@
                     gardenerName: currentUser.name,
                     gardenerPhone: currentUser.phone,
                     customerName: currentJob.customerName,
+                    customerPhone: currentJob.customerPhone,
                     address: currentJob.address,
                     totalPlants: reportData.totalPlants,
                     redZonePlants: reportData.redZonePlants,
@@ -2100,6 +2203,9 @@
             }
         }
 
+        let paymentLinkId = null;
+        let paymentCheckInterval = null;
+
         function showCompleteScreen() {
             document.getElementById('serviceScreen').classList.add('hidden');
             document.getElementById('completeScreen').classList.remove('hidden');
@@ -2110,6 +2216,10 @@
                     <span class="value">${currentJob.customerName}</span>
                 </div>
                 <div class="row">
+                    <span class="label">Address (पता)</span>
+                    <span class="value">${currentJob.address || '-'}</span>
+                </div>
+                <div class="row">
                     <span class="label">Plants Serviced (सर्विस किए पौधे)</span>
                     <span class="value">${reportData.totalPlants || '-'}</span>
                 </div>
@@ -2118,9 +2228,128 @@
                     <span class="value">${reportData.redZonePlants ? 'Yes (हां)' : 'None (नहीं)'}</span>
                 </div>
             `;
+
+            // Initialize payment section
+            initPaymentSection();
+        }
+
+        async function initPaymentSection() {
+            const amount = currentJob.amount || currentJob.price || 0;
+
+            if (!amount || amount <= 0) {
+                // No amount, hide payment section
+                document.getElementById('paymentSection').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('paymentAmount').textContent = `₹${amount}`;
+            document.getElementById('paymentSection').style.display = 'block';
+
+            // Reset payment status
+            document.getElementById('paymentStatus').className = 'payment-status pending';
+            document.getElementById('paymentStatus').innerHTML = `
+                <div class="spinner-small"></div>
+                <span>Creating payment link... <span class="hindi">(पेमेंट लिंक बना रहे...)</span></span>
+            `;
+
+            try {
+                // Create Razorpay payment link via Apps Script
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({
+                        action: 'createPaymentLink',
+                        bookingID: currentJob.id,
+                        amount: amount,
+                        customerName: currentJob.customerName,
+                        customerPhone: currentJob.customerPhone
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.paymentLink) {
+                    paymentLinkId = result.paymentLinkId;
+
+                    // Generate QR code for payment link
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(result.paymentLink)}`;
+                    document.getElementById('paymentQR').src = qrUrl;
+
+                    // Update status
+                    document.getElementById('paymentStatus').innerHTML = `
+                        <div class="spinner-small"></div>
+                        <span>Waiting for payment... <span class="hindi">(पेमेंट का इंतज़ार...)</span></span>
+                    `;
+
+                    // Start polling for payment status
+                    startPaymentStatusCheck();
+                } else {
+                    throw new Error(result.error || 'Failed to create payment link');
+                }
+            } catch (error) {
+                console.error('Payment link error:', error);
+                document.getElementById('paymentStatus').className = 'payment-status pending';
+                document.getElementById('paymentStatus').innerHTML = `
+                    <span>⚠️ Could not create payment link. Use cash. <span class="hindi">(लिंक नहीं बना, कैश लें)</span></span>
+                `;
+            }
+        }
+
+        function startPaymentStatusCheck() {
+            // Clear any existing interval
+            if (paymentCheckInterval) {
+                clearInterval(paymentCheckInterval);
+            }
+
+            // Check every 5 seconds
+            paymentCheckInterval = setInterval(async () => {
+                if (!paymentLinkId) return;
+
+                try {
+                    const response = await fetch(`${API_URL}?action=checkPaymentStatus&paymentLinkId=${paymentLinkId}`);
+                    const result = await response.json();
+
+                    if (result.success && result.status === 'paid') {
+                        // Payment received!
+                        clearInterval(paymentCheckInterval);
+                        showPaymentSuccess();
+                    }
+                } catch (error) {
+                    console.error('Payment status check error:', error);
+                }
+            }, 5000);
+        }
+
+        function showPaymentSuccess() {
+            document.getElementById('paymentStatus').className = 'payment-status paid';
+            document.getElementById('paymentStatus').innerHTML = `
+                <span>✅ Payment Received! <span class="hindi">(पेमेंट मिल गया!)</span></span>
+            `;
+
+            // Hide skip button
+            document.querySelector('.skip-payment-btn').style.display = 'none';
+
+            // Optional: Play a sound or vibrate
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]);
+            }
+        }
+
+        function skipPayment() {
+            if (paymentCheckInterval) {
+                clearInterval(paymentCheckInterval);
+            }
+            document.getElementById('paymentSection').style.display = 'none';
         }
 
         function backToDashboard() {
+            // Clear payment polling
+            if (paymentCheckInterval) {
+                clearInterval(paymentCheckInterval);
+                paymentCheckInterval = null;
+            }
+            paymentLinkId = null;
+
             document.getElementById('completeScreen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             currentJob = null;
