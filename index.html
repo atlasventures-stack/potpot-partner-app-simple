@@ -2174,7 +2174,8 @@
                     redZonePlants: reportData.redZonePlants,
                     beforePhotos: reportData.beforePhotos.join(','),
                     afterPhotos: reportData.afterPhotos.join(','),
-                    completedAt: new Date().toISOString()
+                    completedAt: new Date().toISOString(),
+                    amount: currentJob.amount || 0
                 };
 
                 const response = await fetch(API_URL, {
@@ -2320,7 +2321,7 @@
             }, 5000);
         }
 
-        function showPaymentSuccess() {
+        async function showPaymentSuccess() {
             document.getElementById('paymentStatus').className = 'payment-status paid';
             document.getElementById('paymentStatus').innerHTML = `
                 <span>✅ Payment Received! <span class="hindi">(पेमेंट मिल गया!)</span></span>
@@ -2328,6 +2329,22 @@
 
             // Hide skip button
             document.querySelector('.skip-payment-btn').style.display = 'none';
+
+            // Update payment status in sheet
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({
+                        action: 'updatePaymentStatus',
+                        bookingID: currentJob.id,
+                        status: 'Paid',
+                        paymentLinkId: paymentLinkId
+                    })
+                });
+            } catch (e) {
+                console.error('Failed to update payment status:', e);
+            }
 
             // Optional: Play a sound or vibrate
             if (navigator.vibrate) {

@@ -556,6 +556,40 @@
   }
 
   // ============================================
+  // UPDATE PAYMENT STATUS IN SERVICE REPORT
+  // ============================================
+
+  function updatePaymentStatus(data) {
+    try {
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const reportsSheet = ss.getSheetByName(TABS.SERVICE_REPORTS);
+
+      if (!reportsSheet) {
+        return { success: false, error: 'ServiceReports sheet not found' };
+      }
+
+      const reportsData = reportsSheet.getDataRange().getValues();
+
+      // Find the row with matching bookingID
+      for (let i = 1; i < reportsData.length; i++) {
+        if (reportsData[i][1] === data.bookingID) {
+          // Update PaymentStatus (Column O = index 14) and PaymentLinkId (Column P = index 15)
+          reportsSheet.getRange(i + 1, 15).setValue(data.status || 'Paid');
+          reportsSheet.getRange(i + 1, 16).setValue(data.paymentLinkId || '');
+
+          Logger.log('Payment status updated for booking: ' + data.bookingID);
+          return { success: true, message: 'Payment status updated' };
+        }
+      }
+
+      return { success: false, error: 'Booking not found in reports' };
+    } catch (error) {
+      Logger.log('updatePaymentStatus error: ' + error.toString());
+      return { success: false, error: error.toString() };
+    }
+  }
+
+  // ============================================
   // API ENDPOINTS
   // ============================================
 
@@ -625,6 +659,11 @@
 
       if (data.action === 'createPaymentLink') {
         const result = createPaymentLink(data);
+        return jsonResponse(result);
+      }
+
+      if (data.action === 'updatePaymentStatus') {
+        const result = updatePaymentStatus(data);
         return jsonResponse(result);
       }
 
@@ -920,7 +959,10 @@
         'Notes',
         'BeforePhotos',
         'AfterPhotos',
-        'CompletedAt'
+        'CompletedAt',
+        'PaymentStatus',
+        'PaymentLinkId',
+        'Amount'
       ]);
     }
 
@@ -940,7 +982,10 @@
       data.notes || '',
       data.beforePhotos || '',
       data.afterPhotos || '',
-      new Date()
+      new Date(),
+      'Pending',
+      '',
+      data.amount || 0
     ]);
 
     // Send NPS form to customer after service completion
