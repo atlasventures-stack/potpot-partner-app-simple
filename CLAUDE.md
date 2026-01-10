@@ -16,19 +16,35 @@ Read these files before any work:
 - `index.html` - Partner/Gardener app UI
 - `Code.gs` - Google Apps Script backend (shared by ALL 3 websites)
 
-## Deploy Partner App
+## GitHub Repository
+https://github.com/atlasventures-stack/potpot-partner-app-simple
+
+## Deployment Workflow (MANDATORY)
+
+### For Partner App UI
 ```bash
-cd /Users/apple/Projects/potpot-partner-app-simple && vercel --prod
+cd /Users/apple/Projects/potpot-partner-app-simple
+git add . && git commit -m "description of changes"
+git push
+vercel --prod
 ```
 
-## Deploy Backend (Code.gs)
-1. Open Google Apps Script editor
-2. Replace Code.gs content
-3. Deploy → Manage deployments → Create new deployment
-4. Copy new URL and update API_URL in BOTH files:
+### For Backend (Code.gs)
+1. Edit `Code.gs`
+2. Open Google Apps Script editor
+3. Replace Code.gs content
+4. Deploy → Manage deployments → Create new deployment
+5. Copy new URL and update API_URL in BOTH:
    - `/Users/apple/Projects/potpot-booking-form/booking.html`
    - `/Users/apple/Projects/potpot-partner-app-simple/index.html`
-5. Deploy both frontends with `vercel --prod`
+6. Commit & push both repos
+7. `vercel --prod` for both folders
+
+## After Every Deployment
+Update `CLAUDE_CONTEXT.md` with:
+- What was changed
+- Date of deployment
+- New API URL (if backend changed)
 
 ## Critical Rule
 Marketing ADs are running - verify everything before deploying.
