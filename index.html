@@ -1380,7 +1380,7 @@
         // ============================================
         // CONFIG
         // ============================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyDsiGY_uoHjNX_qmg10tZoYH3lytfYYLlSvNSl__FUewdM75p7lt_JtB4UYtOnDtVI9w/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyzk7-_6BszXKOullmYjjMWkk7x94ZgHikxz1IIOSrvBhuiE7jxKb8063jcDT9wn1Z7NQ/exec';
 
         // ============================================
         // STATE
@@ -2235,6 +2235,20 @@
         }
 
         async function initPaymentSection() {
+            // Fetch fresh job data to get latest amount from Column U
+            try {
+                const response = await fetch(`${API_URL}?action=getGardenerJobs&phone=${currentUser.phone}`);
+                const data = await response.json();
+                if (data.success && data.jobs) {
+                    const freshJob = data.jobs.find(j => j.id === currentJob.id);
+                    if (freshJob && freshJob.amount) {
+                        currentJob.amount = freshJob.amount;
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to fetch fresh amount:', e);
+            }
+
             const amount = currentJob.amount || currentJob.price || 0;
 
             if (!amount || amount <= 0) {

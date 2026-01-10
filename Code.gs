@@ -636,12 +636,13 @@
       const pincode = e.parameter.pincode;
       const lat = e.parameter.lat ? parseFloat(e.parameter.lat) : null;
       const lng = e.parameter.lng ? parseFloat(e.parameter.lng) : null;
+      const plantCount = e.parameter.plantCount ? parseInt(e.parameter.plantCount) : 20; // Default to 20 plants (1hr service)
 
       if (!pincode && !lat) {
         return jsonResponse({ error: 'Pincode or coordinates required' });
       }
 
-      const slots = getAvailableSlots(pincode, lat, lng);
+      const slots = getAvailableSlots(pincode, lat, lng, plantCount);
       return jsonResponse({ success: true, slots: slots });
     } catch (error) {
       return jsonResponse({ error: error.toString() });
@@ -752,6 +753,140 @@
   }
 
   // ============================================
+  // SLOT SYSTEM CONFIGURATION
+  // ============================================
+
+  const SLOT_CONFIG = {
+    START_HOUR: 8,
+    START_MIN: 30,
+    END_HOUR: 18,        // Last slot at 6:00 PM
+    END_MIN: 0,
+    SLOT_INTERVAL: 30,   // 30 min slots
+    LUNCH_START: 13,     // 1:00 PM
+    LUNCH_END: 14,       // 2:00 PM
+    HARD_CUTOFF: 18.5,   // 6:30 PM - all work must finish
+    TRAVEL_BUFFER: 30    // 30 min travel after each booking
+  };
+
+  // ============================================
+  // HELPER: Get service duration from plant count
+  // ============================================
+
+  function getServiceDuration(plantCount) {
+    // Handle empty/null values
+    if (!plantCount) return 90;  // Default 1.5 hours for old bookings without plantCount
+
+    let count = 0;
+    const plantStr = String(plantCount);
+
+    // Handle string ranges like "0-20", "20-35", "35-50", "50+"
+    if (plantStr.includes('-')) {
+      // Extract upper bound: "0-20" -> 20, "20-35" -> 35
+      const parts = plantStr.split('-');
+      count = parseInt(parts[1]) || parseInt(parts[0]) || 0;
+    } else if (plantStr.includes('+')) {
+      // Handle "50+" format -> 51
+      count = parseInt(plantStr) + 1 || 51;
+    } else {
+      // Plain number
+      count = parseInt(plantStr) || 0;
+    }
+
+    if (count === 0) return 90;       // Default 1.5 hours for old bookings without plantCount
+    if (count <= 20) return 60;       // 1 hour
+    if (count <= 35) return 90;       // 1.5 hours
+    if (count <= 50) return 120;      // 2 hours
+    return 180;                        // 3 hours (51-150 plants)
+  }
+
+  // ============================================
+  // HELPER: Time string to minutes from midnight
+  // ============================================
+
+  function timeToMinutes(timeStr) {
+    // Handle "8:30 AM" format (12-hour with AM/PM)
+    const match12hr = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (match12hr) {
+      let hours = parseInt(match12hr[1]);
+      const mins = parseInt(match12hr[2]);
+      const period = match12hr[3].toUpperCase();
+
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+
+      return hours * 60 + mins;
+    }
+
+    // Handle "14:00" format (24-hour without AM/PM)
+    const match24hr = timeStr.match(/(\d{1,2}):(\d{2})/);
+    if (match24hr) {
+      const hours = parseInt(match24hr[1]);
+      const mins = parseInt(match24hr[2]);
+      return hours * 60 + mins;
+    }
+
+    return 0;
+  }
+
+  // ============================================
+  // HELPER: Minutes from midnight to time string
+  // ============================================
+
+  function minutesToTimeStr(mins) {
+    const hours = Math.floor(mins / 60);
+    const minutes = mins % 60;
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  }
+
+  // ============================================
+  // HELPER: Generate all 30-min slot times
+  // ============================================
+
+  function generateAllSlots() {
+    const slots = [];
+    const startMins = SLOT_CONFIG.START_HOUR * 60 + SLOT_CONFIG.START_MIN;
+    const endMins = SLOT_CONFIG.END_HOUR * 60 + SLOT_CONFIG.END_MIN;
+
+    for (let mins = startMins; mins <= endMins; mins += SLOT_CONFIG.SLOT_INTERVAL) {
+      slots.push(minutesToTimeStr(mins));
+    }
+    return slots;
+  }
+
+  // ============================================
+  // HELPER: Check if slot is during lunch
+  // ============================================
+
+  function isLunchTime(slotMins) {
+    const lunchStart = SLOT_CONFIG.LUNCH_START * 60;
+    const lunchEnd = SLOT_CONFIG.LUNCH_END * 60;
+    return slotMins >= lunchStart && slotMins < lunchEnd;
+  }
+
+  // ============================================
+  // HELPER: Check if service overlaps with lunch
+  // ============================================
+
+  function overlapsLunch(startMins, duration) {
+    const endMins = startMins + duration;
+    const lunchStart = SLOT_CONFIG.LUNCH_START * 60;
+    const lunchEnd = SLOT_CONFIG.LUNCH_END * 60;
+    return startMins < lunchEnd && endMins > lunchStart;
+  }
+
+  // ============================================
+  // HELPER: Check if service exceeds cutoff
+  // ============================================
+
+  function exceedsCutoff(startMins, duration) {
+    const endMins = startMins + duration + SLOT_CONFIG.TRAVEL_BUFFER;
+    const cutoffMins = SLOT_CONFIG.HARD_CUTOFF * 60;
+    return endMins > cutoffMins;
+  }
+
+  // ============================================
   // HELPER: Calculate distance (Haversine)
   // ============================================
 
@@ -827,9 +962,9 @@
         id: bookingsData[i][0],
         customerName: bookingsData[i][1],
         customerPhone: bookingsData[i][2],
-        gardenerID: bookingsData[i][4],
+        gardenerID: String(bookingsData[i][4] || ''),
         gardenerName: bookingsData[i][5],
-        timeSlot: bookingsData[i][7],
+        timeSlot: String(bookingsData[i][7] || ''),  // Convert to string (could be Date object)
         plantCount: bookingsData[i][8],
         address: bookingsData[i][9],
         mapLink: bookingsData[i][10],
@@ -837,10 +972,11 @@
       });
     }
 
+    // Sort by time - convert to minutes for proper comparison
     bookings.sort((a, b) => {
       if (!a.timeSlot) return 1;
       if (!b.timeSlot) return -1;
-      return a.timeSlot.localeCompare(b.timeSlot);
+      return timeToMinutes(a.timeSlot) - timeToMinutes(b.timeSlot);
     });
 
     return {
@@ -857,6 +993,8 @@
 
   function getGardenerJobs(phone) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    // Clean input phone - extract last 10 digits
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
 
     const zonesSheet = ss.getSheetByName(TABS.GARDENER_ZONES);
     const zonesData = zonesSheet.getDataRange().getValues();
@@ -865,8 +1003,9 @@
     let gardenerName = null;
 
     for (let i = 1; i < zonesData.length; i++) {
-      const gardenerPhone = String(zonesData[i][3] || '').trim();
-      if (gardenerPhone === phone) {
+      // Clean sheet phone the same way - extract last 10 digits
+      const gardenerPhone = String(zonesData[i][3] || '').replace(/\D/g, '').slice(-10);
+      if (gardenerPhone === cleanPhone) {
         gardenerName = zonesData[i][1];
         gardenerID = zonesData[i][2];
         break;
@@ -886,10 +1025,10 @@
     const jobs = [];
 
     for (let i = 1; i < bookingsData.length; i++) {
-      const bookingGardenerID = bookingsData[i][4];
+      const bookingGardenerID = String(bookingsData[i][4] || '');
       const bookingDate = bookingsData[i][6];
 
-      if (bookingGardenerID !== gardenerID) continue;
+      if (bookingGardenerID !== String(gardenerID)) continue;
 
       const bookingDateStr = parseDateToFormatted(bookingDate);
 
@@ -903,7 +1042,7 @@
         customerPhone: bookingsData[i][2],
         address: bookingsData[i][9],
         mapLink: bookingsData[i][10],
-        timeSlot: bookingsData[i][7],
+        timeSlot: String(bookingsData[i][7] || ''),  // Convert to string (could be Date object)
         plantCount: bookingsData[i][8],
         notes: bookingsData[i][24] || '',  // Column Y - Partner Notes
         amount: bookingsData[i][20] || 0,  // Column U - Amount
@@ -1005,10 +1144,13 @@
   // GET AVAILABLE SLOTS (Booking Form)
   // ============================================
 
-  function getAvailableSlots(pincode, customerLat, customerLng) {
+  function getAvailableSlots(pincode, customerLat, customerLng, plantCount) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const zonesSheet = ss.getSheetByName(TABS.GARDENER_ZONES);
     const zonesData = zonesSheet.getDataRange().getValues();
+
+    // Calculate service duration based on plant count
+    const serviceDuration = getServiceDuration(plantCount);
 
     let gardenerID = null;
     let gardenerName = null;
@@ -1051,31 +1193,65 @@
       return { available: false, message: 'Service not available in your area yet.' };
     }
 
+    // Get all bookings for this gardener from Availability sheet
     const availSheet = ss.getSheetByName(TABS.AVAILABILITY);
     const availData = availSheet.getDataRange().getValues();
 
-    const bookedSlots = {};
-    for (let i = 1; i < availData.length; i++) {
-      const slotGardenerID = availData[i][0];
-      const slotDate = availData[i][1];
-      const timeSlot = availData[i][2];
-      const isBooked = availData[i][3];
+    // Also get bookings from Bookings sheet to know duration of each booking
+    const bookingsSheet = ss.getSheetByName(TABS.BOOKINGS);
+    const bookingsData = bookingsSheet.getDataRange().getValues();
 
-      if (slotGardenerID === gardenerID && isBooked) {
-        const dateKey = parseDateToFormatted(slotDate);
-        bookedSlots[dateKey + '|' + timeSlot] = true;
+    // Build a map of existing bookings with their durations per date
+    // Format: { "dd/MM/yyyy": [{ startMins, duration }, ...] }
+    const existingBookings = {};
+
+    for (let i = 1; i < bookingsData.length; i++) {
+      const bookingGardenerID = String(bookingsData[i][4] || '');
+      if (bookingGardenerID !== String(gardenerID)) continue;
+
+      const bookingDate = parseDateToFormatted(bookingsData[i][6]);
+      const bookingTimeSlotRaw = bookingsData[i][7];
+      const bookingPlantCount = bookingsData[i][8];
+
+      if (!bookingDate || !bookingTimeSlotRaw) continue;
+
+      // Convert to string in case it's a Date object or number from the sheet
+      const bookingTimeSlot = String(bookingTimeSlotRaw);
+
+      // Parse the time slot - handle both old format "8:30 AM - 10:00 AM" and new "8:30 AM"
+      let startTimeStr = bookingTimeSlot;
+      if (bookingTimeSlot.includes(' - ')) {
+        startTimeStr = bookingTimeSlot.split(' - ')[0];
       }
+      const startMins = timeToMinutes(startTimeStr);
+      const duration = getServiceDuration(bookingPlantCount);
+
+      if (!existingBookings[bookingDate]) {
+        existingBookings[bookingDate] = [];
+      }
+      existingBookings[bookingDate].push({ startMins, duration });
     }
 
-    const defaultTimeSlots = [
-      '8:30 AM - 10:00 AM',
-      '10:00 AM - 11:30 AM',
-      '11:30 AM - 1:00 PM',
-      '1:30 PM - 3:00 PM',
-      '3:00 PM - 4:30 PM',
-      '4:30 PM - 6:00 PM'
-    ];
+    // Generate all 30-min slot times
+    const allSlots = generateAllSlots();
 
+    // Helper: Check if a slot overlaps with any existing booking
+    function overlapsExistingBooking(dateKey, slotStartMins, newDuration) {
+      const dayBookings = existingBookings[dateKey] || [];
+      const newEndMins = slotStartMins + newDuration + SLOT_CONFIG.TRAVEL_BUFFER;
+
+      for (const booking of dayBookings) {
+        const bookingEndMins = booking.startMins + booking.duration + SLOT_CONFIG.TRAVEL_BUFFER;
+
+        // Check if there's any overlap
+        if (slotStartMins < bookingEndMins && newEndMins > booking.startMins) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Generate dates with available slots
     const dates = [];
     for (let d = 1; d <= 60; d++) {
       const date = new Date();
@@ -1085,14 +1261,36 @@
       const dateInternal = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
 
       const times = [];
-      defaultTimeSlots.forEach(timeSlot => {
-        if (!bookedSlots[dateKey + '|' + timeSlot]) {
-          times.push({
-            time: timeSlot,
-            rowIndex: null
-          });
+
+      for (const slotTime of allSlots) {
+        const slotMins = timeToMinutes(slotTime);
+
+        // Check 1: Is this during lunch? (1-2 PM)
+        if (isLunchTime(slotMins)) {
+          continue; // Skip lunch slots
         }
-      });
+
+        // Check 2: Would service overlap with lunch?
+        if (overlapsLunch(slotMins, serviceDuration)) {
+          continue;
+        }
+
+        // Check 3: Would service exceed 6:30 PM cutoff?
+        if (exceedsCutoff(slotMins, serviceDuration)) {
+          continue;
+        }
+
+        // Check 4: Does this overlap with an existing booking?
+        if (overlapsExistingBooking(dateKey, slotMins, serviceDuration)) {
+          continue;
+        }
+
+        // Slot is available!
+        times.push({
+          time: slotTime,
+          rowIndex: null
+        });
+      }
 
       dates.push({
         date: dateInternal,
@@ -1105,6 +1303,7 @@
       available: true,
       gardenerName: gardenerName,
       gardenerID: gardenerID,
+      serviceDuration: serviceDuration,
       dates: dates
     };
   }
@@ -1175,7 +1374,41 @@
   // ============================================
 
   function testGetSlots() {
-    Logger.log(JSON.stringify(getAvailableSlots('560102', 12.9716, 77.5946), null, 2));
+    // Test with 20 plants (1 hour service)
+    Logger.log('=== Testing with 20 plants (1hr service) ===');
+    const slots20 = getAvailableSlots('560102', 12.9716, 77.5946, 20);
+    Logger.log('Service Duration: ' + slots20.serviceDuration + ' minutes');
+    Logger.log('First date slots: ' + JSON.stringify(slots20.dates[0].times.map(t => t.time)));
+
+    // Test with 40 plants (2 hour service)
+    Logger.log('=== Testing with 40 plants (2hr service) ===');
+    const slots40 = getAvailableSlots('560102', 12.9716, 77.5946, 40);
+    Logger.log('Service Duration: ' + slots40.serviceDuration + ' minutes');
+    Logger.log('First date slots: ' + JSON.stringify(slots40.dates[0].times.map(t => t.time)));
+
+    // Test with 80 plants (3 hour service)
+    Logger.log('=== Testing with 80 plants (3hr service) ===');
+    const slots80 = getAvailableSlots('560102', 12.9716, 77.5946, 80);
+    Logger.log('Service Duration: ' + slots80.serviceDuration + ' minutes');
+    Logger.log('First date slots: ' + JSON.stringify(slots80.dates[0].times.map(t => t.time)));
+  }
+
+  function testSlotHelpers() {
+    Logger.log('=== Testing Helper Functions ===');
+    Logger.log('Duration for 15 plants: ' + getServiceDuration(15) + ' min');
+    Logger.log('Duration for 30 plants: ' + getServiceDuration(30) + ' min');
+    Logger.log('Duration for 45 plants: ' + getServiceDuration(45) + ' min');
+    Logger.log('Duration for 60 plants: ' + getServiceDuration(60) + ' min');
+
+    Logger.log('timeToMinutes("8:30 AM"): ' + timeToMinutes('8:30 AM'));
+    Logger.log('timeToMinutes("1:00 PM"): ' + timeToMinutes('1:00 PM'));
+    Logger.log('timeToMinutes("6:00 PM"): ' + timeToMinutes('6:00 PM'));
+
+    Logger.log('minutesToTimeStr(510): ' + minutesToTimeStr(510)); // 8:30 AM
+    Logger.log('minutesToTimeStr(780): ' + minutesToTimeStr(780)); // 1:00 PM
+    Logger.log('minutesToTimeStr(1080): ' + minutesToTimeStr(1080)); // 6:00 PM
+
+    Logger.log('All slots: ' + JSON.stringify(generateAllSlots()));
   }
 
   // ========================================
