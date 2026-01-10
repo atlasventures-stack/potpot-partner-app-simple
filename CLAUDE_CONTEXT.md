@@ -15,7 +15,7 @@
 
 ## Current Backend API
 ```
-https://script.google.com/macros/s/AKfycbxHrc_rMELelwhFgkhO0rxqoapDkLMt-h2AYnZRBjVFfK-3rST5lDEcVe4-zJUbRkSa/exec
+https://script.google.com/macros/s/AKfycbxqVQ9yryiOEm78MxJgImsNamQojvOAJmKLHBCjEzWoi3M3KZepl2dI1olR7sn_O8wt2w/exec
 ```
 
 ## How to Deploy Backend (Code.gs)
@@ -90,3 +90,9 @@ const SLOT_CONFIG = {
 - Fixed GardenerID comparisons to use String() conversion
 - Fixed phone number comparisons to extract last 10 digits consistently
 - Fixed sorting to use timeToMinutes() instead of localeCompare
+
+### Partner App Fixes (2026-01-10)
+- Added `formatTimeSlotForDisplay()` helper to convert Date objects to readable "8:30 AM" format
+- Fixed `getGardenerJobs()` - now returns properly formatted time slots instead of Date object garbage
+- Fixed `getAdminReports()` - same fix for admin dashboard
+- Added job sorting in `getGardenerJobs()` - jobs now appear in chronological order (earliest first)
