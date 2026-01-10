@@ -928,6 +928,27 @@
   }
 
   // ============================================
+  // HELPER: Format time slot for display
+  // ============================================
+
+  function formatTimeSlotForDisplay(timeSlotRaw) {
+    if (!timeSlotRaw) return '';
+
+    // Handle Date objects from Google Sheets
+    if (timeSlotRaw instanceof Date ||
+        (timeSlotRaw && typeof timeSlotRaw.getHours === 'function')) {
+      const hours = timeSlotRaw.getHours();
+      const mins = timeSlotRaw.getMinutes();
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+      return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+    }
+
+    // Already a string - return as-is
+    return String(timeSlotRaw);
+  }
+
+  // ============================================
   // GET ADMIN DATA (Admin Panel)
   // ============================================
 
@@ -990,7 +1011,7 @@
         customerPhone: bookingsData[i][2],
         gardenerID: String(bookingsData[i][4] || ''),
         gardenerName: bookingsData[i][5],
-        timeSlot: String(bookingsData[i][7] || ''),  // Convert to string (could be Date object)
+        timeSlot: formatTimeSlotForDisplay(bookingsData[i][7]),
         plantCount: bookingsData[i][8],
         address: bookingsData[i][9],
         mapLink: bookingsData[i][10],
@@ -1068,7 +1089,7 @@
         customerPhone: bookingsData[i][2],
         address: bookingsData[i][9],
         mapLink: bookingsData[i][10],
-        timeSlot: String(bookingsData[i][7] || ''),  // Convert to string (could be Date object)
+        timeSlot: formatTimeSlotForDisplay(bookingsData[i][7]),
         plantCount: bookingsData[i][8],
         notes: bookingsData[i][24] || '',  // Column Y - Partner Notes
         amount: bookingsData[i][20] || 0,  // Column U - Amount
