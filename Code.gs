@@ -31,7 +31,16 @@
   function parseDate(dateValue) {
     if (!dateValue || dateValue === 'Not yet' || dateValue === 'not yet') return null;
 
-    if (dateValue instanceof Date) {
+    // Handle Date objects from Google Sheets (instanceof may fail across realms)
+    if (dateValue instanceof Date ||
+        (dateValue && typeof dateValue.getTime === 'function')) {
+      if (isNaN(dateValue.getTime())) return null;
+      return dateValue;
+    }
+
+    // Also check for Date-like objects from Sheets that might not pass instanceof
+    if (dateValue && typeof dateValue === 'object' && dateValue.constructor &&
+        dateValue.constructor.name === 'Date') {
       if (isNaN(dateValue.getTime())) return null;
       return dateValue;
     }
@@ -804,8 +813,12 @@
   // ============================================
 
   function timeToMinutes(timeStr) {
-    // Handle "8:30 AM" format (12-hour with AM/PM)
-    const match12hr = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!timeStr) return 0;
+    const str = String(timeStr);
+
+    // Handle "8:30 AM" or "8:30:00 AM" format (12-hour with AM/PM, optional seconds)
+    // Use ^ anchor to match from start and avoid matching wrong part of string
+    const match12hr = str.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)/i);
     if (match12hr) {
       let hours = parseInt(match12hr[1]);
       const mins = parseInt(match12hr[2]);
@@ -817,11 +830,24 @@
       return hours * 60 + mins;
     }
 
-    // Handle "14:00" format (24-hour without AM/PM)
-    const match24hr = timeStr.match(/(\d{1,2}):(\d{2})/);
+    // Handle "14:00" or "14:00:00" format (24-hour without AM/PM)
+    const match24hr = str.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
     if (match24hr) {
       const hours = parseInt(match24hr[1]);
       const mins = parseInt(match24hr[2]);
+      return hours * 60 + mins;
+    }
+
+    // Fallback: try to find any time pattern in the string (for long date strings)
+    const matchAny = str.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)/i);
+    if (matchAny) {
+      let hours = parseInt(matchAny[1]);
+      const mins = parseInt(matchAny[2]);
+      const period = matchAny[3].toUpperCase();
+
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+
       return hours * 60 + mins;
     }
 
@@ -1215,8 +1241,19 @@
 
       if (!bookingDate || !bookingTimeSlotRaw) continue;
 
-      // Convert to string in case it's a Date object or number from the sheet
-      const bookingTimeSlot = String(bookingTimeSlotRaw);
+      // Handle time slot - could be Date object (TIME value) or string
+      let bookingTimeSlot;
+      if (bookingTimeSlotRaw instanceof Date ||
+          (bookingTimeSlotRaw && typeof bookingTimeSlotRaw.getHours === 'function')) {
+        // It's a TIME value stored as Date object - extract time in 12-hour format
+        const hours = bookingTimeSlotRaw.getHours();
+        const mins = bookingTimeSlotRaw.getMinutes();
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+        bookingTimeSlot = `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+      } else {
+        bookingTimeSlot = String(bookingTimeSlotRaw);
+      }
 
       // Parse the time slot - handle both old format "8:30 AM - 10:00 AM" and new "8:30 AM"
       let startTimeStr = bookingTimeSlot;
@@ -1320,12 +1357,56 @@
       if (!data[field]) throw new Error('Missing: ' + field);
     }
 
-    const bookingID = 'PP' + Date.now().toString(36).toUpperCase();
-
     const [year, month, day] = data.date.split('-');
     const formattedDate = `${day}/${month}/${year}`;
 
+    // === CRITICAL: Re-validate slot availability before booking ===
     const bookingsSheet = ss.getSheetByName(TABS.BOOKINGS);
+    const bookingsData = bookingsSheet.getDataRange().getValues();
+
+    const requestedSlotMins = timeToMinutes(data.timeSlot);
+    const requestedDuration = getServiceDuration(data.plantCount);
+    const requestedEndMins = requestedSlotMins + requestedDuration + SLOT_CONFIG.TRAVEL_BUFFER;
+
+    for (let i = 1; i < bookingsData.length; i++) {
+      const bookingGardenerID = String(bookingsData[i][4] || '');
+      if (bookingGardenerID !== String(data.gardenerID)) continue;
+
+      const bookingDate = parseDateToFormatted(bookingsData[i][6]);
+      if (bookingDate !== formattedDate) continue;
+
+      // This gardener already has a booking on this date - check for overlap
+      // Handle time slot - could be Date object (TIME value) or string
+      const existingTimeSlotRaw = bookingsData[i][7];
+      let existingTimeSlot;
+      if (existingTimeSlotRaw instanceof Date ||
+          (existingTimeSlotRaw && typeof existingTimeSlotRaw.getHours === 'function')) {
+        const hours = existingTimeSlotRaw.getHours();
+        const mins = existingTimeSlotRaw.getMinutes();
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+        existingTimeSlot = `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+      } else {
+        existingTimeSlot = String(existingTimeSlotRaw || '');
+      }
+
+      let existingStartStr = existingTimeSlot;
+      if (existingTimeSlot.includes(' - ')) {
+        existingStartStr = existingTimeSlot.split(' - ')[0];
+      }
+      const existingStartMins = timeToMinutes(existingStartStr);
+      const existingDuration = getServiceDuration(bookingsData[i][8]);
+      const existingEndMins = existingStartMins + existingDuration + SLOT_CONFIG.TRAVEL_BUFFER;
+
+      // Check overlap
+      if (requestedSlotMins < existingEndMins && requestedEndMins > existingStartMins) {
+        throw new Error('SLOT_TAKEN: This time slot is no longer available. Please select another slot.');
+      }
+    }
+    // === END: Slot validation ===
+
+    const bookingID = 'PP' + Date.now().toString(36).toUpperCase();
+
     bookingsSheet.appendRow([
       bookingID,
       data.customerName || 'Customer',
@@ -1372,6 +1453,92 @@
   // ============================================
   // TEST FUNCTIONS
   // ============================================
+
+  // RUN THIS TO VERIFY DUPLICATE DETECTION WORKS WITH YOUR ACTUAL DATA
+  function testDuplicateDetection() {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const bookingsSheet = ss.getSheetByName(TABS.BOOKINGS);
+    const bookingsData = bookingsSheet.getDataRange().getValues();
+
+    Logger.log('=== TESTING DUPLICATE DETECTION ===');
+    Logger.log('Total bookings: ' + (bookingsData.length - 1));
+
+    // Group bookings by gardener + date
+    const bookingsByGardenerDate = {};
+
+    for (let i = 1; i < bookingsData.length; i++) {
+      const gardenerID = String(bookingsData[i][4] || '');
+      const dateRaw = bookingsData[i][6];
+      const timeRaw = bookingsData[i][7];
+      const customerName = bookingsData[i][1];
+
+      // Test date parsing
+      const dateFormatted = parseDateToFormatted(dateRaw);
+      Logger.log(`Row ${i+1}: Date raw type = ${typeof dateRaw}, isDate = ${dateRaw instanceof Date}, formatted = ${dateFormatted}`);
+
+      // Test time parsing
+      let timeFormatted;
+      if (timeRaw instanceof Date || (timeRaw && typeof timeRaw.getHours === 'function')) {
+        const hours = timeRaw.getHours();
+        const mins = timeRaw.getMinutes();
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+        timeFormatted = `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+        Logger.log(`Row ${i+1}: Time was Date object, converted to: ${timeFormatted}`);
+      } else {
+        timeFormatted = String(timeRaw);
+        Logger.log(`Row ${i+1}: Time was string: ${timeFormatted}`);
+      }
+
+      const startMins = timeToMinutes(timeFormatted.includes(' - ') ? timeFormatted.split(' - ')[0] : timeFormatted);
+      Logger.log(`Row ${i+1}: startMins = ${startMins}`);
+
+      const key = `${gardenerID}_${dateFormatted}`;
+      if (!bookingsByGardenerDate[key]) {
+        bookingsByGardenerDate[key] = [];
+      }
+      bookingsByGardenerDate[key].push({
+        row: i + 1,
+        customer: customerName,
+        time: timeFormatted,
+        startMins: startMins
+      });
+    }
+
+    // Find duplicates
+    Logger.log('\n=== CHECKING FOR OVERLAPS ===');
+    let duplicatesFound = 0;
+
+    for (const key in bookingsByGardenerDate) {
+      const bookings = bookingsByGardenerDate[key];
+      if (bookings.length > 1) {
+        Logger.log(`\n${key} has ${bookings.length} bookings:`);
+
+        // Check each pair for overlap
+        for (let i = 0; i < bookings.length; i++) {
+          for (let j = i + 1; j < bookings.length; j++) {
+            const b1 = bookings[i];
+            const b2 = bookings[j];
+            const duration = 90; // default
+            const buffer = 30;
+
+            const b1End = b1.startMins + duration + buffer;
+            const b2End = b2.startMins + duration + buffer;
+
+            const overlaps = b1.startMins < b2End && b2.startMins < b1End;
+
+            if (overlaps) {
+              duplicatesFound++;
+              Logger.log(`  ⚠️ OVERLAP: Row ${b1.row} (${b1.customer} @ ${b1.time}) vs Row ${b2.row} (${b2.customer} @ ${b2.time})`);
+            }
+          }
+        }
+      }
+    }
+
+    Logger.log(`\n=== RESULT: ${duplicatesFound} overlapping bookings found ===`);
+    return duplicatesFound;
+  }
 
   function testGetSlots() {
     // Test with 20 plants (1 hour service)

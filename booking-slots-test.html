@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PotPot Booking Slots - Test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2e7d32;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .card h2 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Plant Count Selection */
+        .plant-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .plant-option {
+            padding: 14px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .plant-option:hover {
+            border-color: #a5d6a7;
+            background: #f1f8e9;
+        }
+
+        .plant-option.selected {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        .plant-option .range {
+            font-weight: 700;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .plant-option .duration {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Date Selection */
+        .date-input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+
+        /* Time Slots */
+        .time-slots-container {
+            margin-top: 16px;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .time-slot {
+            padding: 12px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .time-slot.available {
+            background: #f1f8e9;
+            border-color: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .time-slot.available:hover {
+            background: #c8e6c9;
+            border-color: #4caf50;
+        }
+
+        .time-slot.selected {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: white;
+        }
+
+        .time-slot.unavailable {
+            background: #f5f5f5;
+            border-color: #e0e0e0;
+            color: #bbb;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        .time-slot.lunch {
+            background: #fff3e0;
+            border-color: #ffe0b2;
+            color: #e65100;
+            cursor: not-allowed;
+        }
+
+        .time-slot.booked {
+            background: #ffebee;
+            border-color: #ffcdd2;
+            color: #c62828;
+            cursor: not-allowed;
+        }
+
+        .time-slot .slot-time {
+            font-weight: 600;
+        }
+
+        .time-slot .slot-status {
+            font-size: 10px;
+            margin-top: 2px;
+            opacity: 0.8;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        .legend-dot.available { background: #c8e6c9; }
+        .legend-dot.lunch { background: #ffe0b2; }
+        .legend-dot.booked { background: #ffcdd2; }
+        .legend-dot.unavailable { background: #e0e0e0; }
+
+        /* Booking Summary */
+        .booking-summary {
+            background: #e8f5e9;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #c8e6c9;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        /* Button */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+
+        .btn-primary {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #43a047;
+        }
+
+        .btn-primary:disabled {
+            background: #a5d6a7;
+            cursor: not-allowed;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #e65100;
+        }
+
+        /* Existing Bookings Card */
+        .existing-bookings {
+            margin-top: 16px;
+        }
+
+        .booking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .booking-item .time {
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        .booking-item .plants {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .booking-item .delete-btn {
+            background: #ffebee;
+            color: #c62828;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Schedule View */
+        .schedule-view {
+            margin-top: 20px;
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .schedule-header h3 {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .schedule-timeline {
+            position: relative;
+            padding-left: 60px;
+        }
+
+        .schedule-hour {
+            position: relative;
+            height: 60px;
+            border-top: 1px solid #eee;
+        }
+
+        .schedule-hour .hour-label {
+            position: absolute;
+            left: -60px;
+            top: -8px;
+            font-size: 12px;
+            color: #888;
+            width: 50px;
+            text-align: right;
+        }
+
+        .schedule-block {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            z-index: 1;
+        }
+
+        .schedule-block.service {
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            color: #2e7d32;
+        }
+
+        .schedule-block.travel {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            color: #1565c0;
+        }
+
+        .schedule-block.lunch {
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PotPot Booking Slots</h1>
+        <p class="subtitle">Test the new 30-minute slot booking system</p>
+
+        <div class="info-box">
+            <strong>Rules:</strong><br>
+            - Slots: 8:30 AM to 5:30 PM (30 min intervals)<br>
+            - Lunch: 1:00 PM - 2:00 PM (blocked)<br>
+            - 30 min travel time after each booking<br>
+            - All work must complete by 6:30 PM
+        </div>
+
+        <!-- Plant Count Selection -->
+        <div class="card">
+            <h2>Step 1: Select Plant Count</h2>
+            <div class="plant-options" id="plantOptions">
+                <div class="plant-option" data-plants="0-20" data-duration="60">
+                    <div class="range">0-20</div>
+                    <div class="duration">1 hour</div>
+                </div>
+                <div class="plant-option" data-plants="21-35" data-duration="90">
+                    <div class="range">21-35</div>
+                    <div class="duration">1.5 hours</div>
+                </div>
+                <div class="plant-option" data-plants="36-50" data-duration="120">
+                    <div class="range">36-50</div>
+                    <div class="duration">2 hours</div>
+                </div>
+                <div class="plant-option" data-plants="51-75" data-duration="180">
+                    <div class="range">51-75</div>
+                    <div class="duration">3 hours</div>
+                </div>
+                <div class="plant-option" data-plants="76-100" data-duration="180">
+                    <div class="range">76-100</div>
+                    <div class="duration">3 hours</div>
+                </div>
+                <div class="plant-option" data-plants="100-150" data-duration="180">
+                    <div class="range">100-150</div>
+                    <div class="duration">3 hours</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date Selection -->
+        <div class="card">
+            <h2>Step 2: Select Date</h2>
+            <input type="date" class="date-input" id="dateInput">
+        </div>
+
+        <!-- Time Slot Selection -->
+        <div class="card" id="timeSlotsCard" style="display: none;">
+            <h2>Step 3: Select Time Slot</h2>
+            <div id="existingBookings" class="existing-bookings"></div>
+            <div class="time-grid" id="timeGrid"></div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot available"></div>
+                    <span>Available</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot lunch"></div>
+                    <span>Lunch Break</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot booked"></div>
+                    <span>Booked</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot unavailable"></div>
+                    <span>Unavailable</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Summary -->
+        <div class="card" id="summaryCard" style="display: none;">
+            <h2>Booking Summary</h2>
+            <div class="booking-summary">
+                <div class="summary-row">
+                    <span class="summary-label">Plants</span>
+                    <span class="summary-value" id="summaryPlants">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Date</span>
+                    <span class="summary-value" id="summaryDate">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Time</span>
+                    <span class="summary-value" id="summaryTime">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Service Duration</span>
+                    <span class="summary-value" id="summaryDuration">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">End Time (with travel)</span>
+                    <span class="summary-value" id="summaryEndTime">-</span>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="confirmBtn" onclick="confirmBooking()">Confirm Booking</button>
+        </div>
+
+        <!-- Day Schedule View -->
+        <div class="card" id="scheduleCard" style="display: none;">
+            <h2>Day Schedule (Visual)</h2>
+            <div id="scheduleView"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const CONFIG = {
+            START_TIME: '08:30',      // First slot
+            END_TIME: '17:30',        // Last slot start
+            SLOT_INTERVAL: 30,        // Minutes between slots
+            LUNCH_START: '13:00',     // Lunch block start
+            LUNCH_END: '14:00',       // Lunch block end
+            HARD_CUTOFF: '18:30',     // All work must finish by this time
+            TRAVEL_TIME: 30           // Minutes travel after each booking
+        };
+
+        // Service duration based on plant count (in minutes)
+        const PLANT_DURATIONS = {
+            '0-20': 60,      // 1 hour
+            '21-35': 90,     // 1.5 hours
+            '36-50': 120,    // 2 hours
+            '51-75': 180,    // 3 hours
+            '76-100': 180,   // 3 hours
+            '100-150': 180   // 3 hours
+        };
+
+        // ============================================
+        // STATE
+        // ============================================
+        let selectedPlantRange = null;
+        let selectedDuration = 0;
+        let selectedDate = null;
+        let selectedSlot = null;
+
+        // Simulated existing bookings (per date)
+        // In real app, this would come from backend
+        let bookings = {};
+
+        // ============================================
+        // TIME UTILITIES
+        // ============================================
+        function timeToMinutes(timeStr) {
+            const [hours, mins] = timeStr.split(':').map(Number);
+            return hours * 60 + mins;
+        }
+
+        function minutesToTime(mins) {
+            const hours = Math.floor(mins / 60);
+            const minutes = mins % 60;
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        function formatTimeDisplay(timeStr) {
+            const [hours, mins] = timeStr.split(':').map(Number);
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+            return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+        }
+
+        function formatDuration(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            if (hours === 0) return `${mins} min`;
+            if (mins === 0) return `${hours} hr`;
+            return `${hours} hr ${mins} min`;
+        }
+
+        // ============================================
+        // SLOT GENERATION
+        // ============================================
+        function generateTimeSlots() {
+            const slots = [];
+            const startMins = timeToMinutes(CONFIG.START_TIME);
+            const endMins = timeToMinutes(CONFIG.END_TIME);
+
+            for (let mins = startMins; mins <= endMins; mins += CONFIG.SLOT_INTERVAL) {
+                slots.push(minutesToTime(mins));
+            }
+            return slots;
+        }
+
+        // ============================================
+        // AVAILABILITY CHECKING
+        // ============================================
+        function getDateBookings(date) {
+            return bookings[date] || [];
+        }
+
+        function isLunchTime(slotTime) {
+            const slotMins = timeToMinutes(slotTime);
+            const lunchStart = timeToMinutes(CONFIG.LUNCH_START);
+            const lunchEnd = timeToMinutes(CONFIG.LUNCH_END);
+            return slotMins >= lunchStart && slotMins < lunchEnd;
+        }
+
+        function doesOverlapWithLunch(startTime, duration) {
+            const startMins = timeToMinutes(startTime);
+            const endMins = startMins + duration;
+            const lunchStart = timeToMinutes(CONFIG.LUNCH_START);
+            const lunchEnd = timeToMinutes(CONFIG.LUNCH_END);
+
+            // Check if service time overlaps with lunch
+            return (startMins < lunchEnd && endMins > lunchStart);
+        }
+
+        function doesExceedCutoff(startTime, duration) {
+            const startMins = timeToMinutes(startTime);
+            const endMins = startMins + duration + CONFIG.TRAVEL_TIME;
+            const cutoffMins = timeToMinutes(CONFIG.HARD_CUTOFF);
+            return endMins > cutoffMins;
+        }
+
+        function doesOverlapWithBooking(startTime, duration, existingBookings) {
+            const newStart = timeToMinutes(startTime);
+            const newEnd = newStart + duration + CONFIG.TRAVEL_TIME;
+
+            for (const booking of existingBookings) {
+                const bookingStart = timeToMinutes(booking.startTime);
+                const bookingEnd = bookingStart + booking.duration + CONFIG.TRAVEL_TIME;
+
+                // Check overlap
+                if (newStart < bookingEnd && newEnd > bookingStart) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function getSlotStatus(slotTime, duration, existingBookings) {
+            // Check if it's lunch time
+            if (isLunchTime(slotTime)) {
+                return { available: false, reason: 'lunch', label: 'Lunch' };
+            }
+
+            // Check if service would overlap with lunch
+            if (doesOverlapWithLunch(slotTime, duration)) {
+                return { available: false, reason: 'overlaps-lunch', label: 'Overlaps Lunch' };
+            }
+
+            // Check if service would exceed cutoff
+            if (doesExceedCutoff(slotTime, duration)) {
+                return { available: false, reason: 'exceeds-cutoff', label: 'Too Late' };
+            }
+
+            // Check if overlaps with existing booking
+            if (doesOverlapWithBooking(slotTime, duration, existingBookings)) {
+                return { available: false, reason: 'booked', label: 'Booked' };
+            }
+
+            return { available: true, reason: 'available', label: 'Available' };
+        }
+
+        // ============================================
+        // UI RENDERING
+        // ============================================
+        function renderTimeSlots() {
+            if (!selectedPlantRange || !selectedDate) return;
+
+            const card = document.getElementById('timeSlotsCard');
+            card.style.display = 'block';
+
+            const grid = document.getElementById('timeGrid');
+            const slots = generateTimeSlots();
+            const existingBookings = getDateBookings(selectedDate);
+
+            // Show existing bookings
+            renderExistingBookings(existingBookings);
+
+            grid.innerHTML = slots.map(slot => {
+                const status = getSlotStatus(slot, selectedDuration, existingBookings);
+                let className = 'time-slot ';
+
+                if (selectedSlot === slot) {
+                    className += 'selected';
+                } else if (!status.available) {
+                    if (status.reason === 'lunch') {
+                        className += 'lunch';
+                    } else if (status.reason === 'booked') {
+                        className += 'booked';
+                    } else {
+                        className += 'unavailable';
+                    }
+                } else {
+                    className += 'available';
+                }
+
+                return `
+                    <div class="${className}"
+                         data-slot="${slot}"
+                         data-available="${status.available}"
+                         onclick="selectSlot('${slot}', ${status.available})">
+                        <div class="slot-time">${formatTimeDisplay(slot)}</div>
+                        <div class="slot-status">${status.label}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderExistingBookings(existingBookings) {
+            const container = document.getElementById('existingBookings');
+
+            if (existingBookings.length === 0) {
+                container.innerHTML = '<p style="font-size: 13px; color: #888; margin-bottom: 12px;">No existing bookings for this date</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <p style="font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 600;">Existing Bookings:</p>
+                ${existingBookings.map((b, i) => `
+                    <div class="booking-item">
+                        <div>
+                            <div class="time">${formatTimeDisplay(b.startTime)} - ${formatTimeDisplay(minutesToTime(timeToMinutes(b.startTime) + b.duration))}</div>
+                            <div class="plants">${b.plantRange} plants (${formatDuration(b.duration)} + ${CONFIG.TRAVEL_TIME}min travel)</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteBooking('${selectedDate}', ${i})">Delete</button>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function renderSummary() {
+            if (!selectedSlot) {
+                document.getElementById('summaryCard').style.display = 'none';
+                return;
+            }
+
+            const card = document.getElementById('summaryCard');
+            card.style.display = 'block';
+
+            const startMins = timeToMinutes(selectedSlot);
+            const endServiceMins = startMins + selectedDuration;
+            const endWithTravelMins = endServiceMins + CONFIG.TRAVEL_TIME;
+
+            document.getElementById('summaryPlants').textContent = selectedPlantRange;
+            document.getElementById('summaryDate').textContent = new Date(selectedDate).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+            document.getElementById('summaryTime').textContent = `${formatTimeDisplay(selectedSlot)} - ${formatTimeDisplay(minutesToTime(endServiceMins))}`;
+            document.getElementById('summaryDuration').textContent = formatDuration(selectedDuration);
+            document.getElementById('summaryEndTime').textContent = formatTimeDisplay(minutesToTime(endWithTravelMins));
+        }
+
+        function renderScheduleView() {
+            if (!selectedDate) {
+                document.getElementById('scheduleCard').style.display = 'none';
+                return;
+            }
+
+            const card = document.getElementById('scheduleCard');
+            card.style.display = 'block';
+
+            const existingBookings = getDateBookings(selectedDate);
+            const startHour = 8;
+            const endHour = 19; // 7 PM
+
+            let html = '<div class="schedule-timeline">';
+
+            // Render hour lines
+            for (let h = startHour; h <= endHour; h++) {
+                const label = h > 12 ? `${h-12} PM` : (h === 12 ? '12 PM' : `${h} AM`);
+                html += `
+                    <div class="schedule-hour">
+                        <span class="hour-label">${label}</span>
+                    </div>
+                `;
+            }
+
+            // Render lunch block
+            const lunchTop = (timeToMinutes(CONFIG.LUNCH_START) - startHour * 60);
+            const lunchHeight = 60; // 1 hour
+            html += `
+                <div class="schedule-block lunch" style="top: ${lunchTop}px; height: ${lunchHeight}px;">
+                    Lunch Break
+                </div>
+            `;
+
+            // Render existing bookings
+            existingBookings.forEach(b => {
+                const top = timeToMinutes(b.startTime) - startHour * 60;
+                const height = b.duration;
+                const travelTop = top + height;
+                const travelHeight = CONFIG.TRAVEL_TIME;
+
+                html += `
+                    <div class="schedule-block service" style="top: ${top}px; height: ${height}px;">
+                        ${b.plantRange} plants
+                    </div>
+                    <div class="schedule-block travel" style="top: ${travelTop}px; height: ${travelHeight}px;">
+                        Travel
+                    </div>
+                `;
+            });
+
+            // Render selected slot preview
+            if (selectedSlot) {
+                const top = timeToMinutes(selectedSlot) - startHour * 60;
+                const height = selectedDuration;
+                const travelTop = top + height;
+                const travelHeight = CONFIG.TRAVEL_TIME;
+
+                html += `
+                    <div class="schedule-block service" style="top: ${top}px; height: ${height}px; opacity: 0.7; border-style: dashed;">
+                        NEW: ${selectedPlantRange} plants
+                    </div>
+                    <div class="schedule-block travel" style="top: ${travelTop}px; height: ${travelHeight}px; opacity: 0.7; border-style: dashed;">
+                        Travel
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            document.getElementById('scheduleView').innerHTML = html;
+        }
+
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+        function selectPlantRange(element) {
+            // Deselect all
+            document.querySelectorAll('.plant-option').forEach(el => el.classList.remove('selected'));
+
+            // Select this one
+            element.classList.add('selected');
+            selectedPlantRange = element.dataset.plants;
+            selectedDuration = parseInt(element.dataset.duration);
+
+            // Reset slot selection when plant count changes
+            selectedSlot = null;
+
+            // Re-render time slots if date is selected
+            if (selectedDate) {
+                renderTimeSlots();
+                renderSummary();
+                renderScheduleView();
+            }
+        }
+
+        function selectDate(date) {
+            selectedDate = date;
+            selectedSlot = null;
+            renderTimeSlots();
+            renderSummary();
+            renderScheduleView();
+        }
+
+        function selectSlot(slot, isAvailable) {
+            if (!isAvailable) return;
+
+            selectedSlot = slot;
+            renderTimeSlots();
+            renderSummary();
+            renderScheduleView();
+        }
+
+        function confirmBooking() {
+            if (!selectedSlot || !selectedDate || !selectedPlantRange) {
+                alert('Please complete all selections');
+                return;
+            }
+
+            // Add to bookings
+            if (!bookings[selectedDate]) {
+                bookings[selectedDate] = [];
+            }
+
+            bookings[selectedDate].push({
+                startTime: selectedSlot,
+                duration: selectedDuration,
+                plantRange: selectedPlantRange
+            });
+
+            // Sort bookings by time
+            bookings[selectedDate].sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+            alert(`Booking confirmed!\n\nDate: ${selectedDate}\nTime: ${formatTimeDisplay(selectedSlot)}\nPlants: ${selectedPlantRange}\nDuration: ${formatDuration(selectedDuration)}`);
+
+            // Reset slot selection
+            selectedSlot = null;
+            renderTimeSlots();
+            renderSummary();
+            renderScheduleView();
+        }
+
+        function deleteBooking(date, index) {
+            if (confirm('Delete this booking?')) {
+                bookings[date].splice(index, 1);
+                renderTimeSlots();
+                renderScheduleView();
+            }
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('dateInput');
+            dateInput.min = today;
+            dateInput.value = today;
+
+            // Plant option click handlers
+            document.querySelectorAll('.plant-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    selectPlantRange(this);
+                });
+            });
+
+            // Date change handler
+            dateInput.addEventListener('change', function() {
+                selectDate(this.value);
+            });
+
+            // Add some sample bookings for testing
+            bookings[today] = [
+                { startTime: '09:00', duration: 90, plantRange: '21-35' },
+                { startTime: '15:00', duration: 120, plantRange: '36-50' }
+            ];
+
+            // Pre-select first option for demo
+            document.querySelector('.plant-option').click();
+            selectDate(today);
+        });
+    </script>
+</body>
+</html>
