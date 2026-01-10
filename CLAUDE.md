@@ -21,12 +21,13 @@ https://github.com/atlasventures-stack/potpot-partner-app-simple
 
 ## Deployment Workflow (MANDATORY)
 
+**CRITICAL: ALWAYS use explicit `cd` before EVERY command. The shell persists directory state, so running `vercel --prod` without `cd` will deploy the WRONG project. NEVER assume working directory is correct.**
+
 ### For Partner App UI
 ```bash
-cd /Users/apple/Projects/potpot-partner-app-simple
-git add . && git commit -m "description of changes"
-git push
-vercel --prod
+cd /Users/apple/Projects/potpot-partner-app-simple && git add . && git commit -m "description of changes"
+cd /Users/apple/Projects/potpot-partner-app-simple && git push
+cd /Users/apple/Projects/potpot-partner-app-simple && vercel --prod
 ```
 
 ### For Backend (Code.gs)
