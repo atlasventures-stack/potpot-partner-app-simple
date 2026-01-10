@@ -15,7 +15,7 @@
 
 ## Current Backend API
 ```
-https://script.google.com/macros/s/AKfycbyzk7-_6BszXKOullmYjjMWkk7x94ZgHikxz1IIOSrvBhuiE7jxKb8063jcDT9wn1Z7NQ/exec
+https://script.google.com/macros/s/AKfycbxHrc_rMELelwhFgkhO0rxqoapDkLMt-h2AYnZRBjVFfK-3rST5lDEcVe4-zJUbRkSa/exec
 ```
 
 ## How to Deploy Backend (Code.gs)
@@ -77,6 +77,14 @@ const SLOT_CONFIG = {
 - `nps_form` - Sent after service completion
 
 ## Recent Changes (2026-01-10)
+### Critical Bug Fix: Duplicate Bookings
+- **Root Cause:** Google Sheets returns Date objects for dates/times, but `instanceof Date` failed in Apps Script
+- **Fix 1:** Added multiple Date object detection methods (`typeof dateValue.getTime === 'function'`)
+- **Fix 2:** Handle time formats with seconds (`11:00:00 AM`) via updated regex
+- **Fix 3:** Added `SLOT_TAKEN` validation in `createBooking()` as second layer of protection
+- **Fix 4:** Added `testDuplicateDetection()` function to verify fix with actual data
+
+### Other Fixes
 - Fixed `timeToMinutes` to handle both "2:00 PM" and "14:00" formats
 - Fixed `getServiceDuration` to handle string ranges like "0-20", "20-35"
 - Fixed GardenerID comparisons to use String() conversion
