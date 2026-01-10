@@ -1097,6 +1097,13 @@
       });
     }
 
+    // Sort jobs by time - earliest first
+    jobs.sort((a, b) => {
+      if (!a.timeSlot) return 1;
+      if (!b.timeSlot) return -1;
+      return timeToMinutes(a.timeSlot) - timeToMinutes(b.timeSlot);
+    });
+
     return {
       success: true,
       gardener: {
