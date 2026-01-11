@@ -1435,7 +1435,8 @@
 
     const bookingID = 'PP' + Date.now().toString(36).toUpperCase();
 
-    bookingsSheet.appendRow([
+    // Prepare booking row data
+    const bookingRow = [
       bookingID,
       data.customerName || 'Customer',
       data.phone || '',
@@ -1449,7 +1450,66 @@
       data.mapLink || '',
       data.notes || '',
       new Date()
-    ]);
+    ];
+
+    // Save to sheet
+    bookingsSheet.appendRow(bookingRow);
+
+    // CRITICAL: Force write to complete
+    SpreadsheetApp.flush();
+
+    // Small delay to ensure persistence
+    Utilities.sleep(300);
+
+    // VERIFY the row was actually written
+    const verifyData = bookingsSheet.getDataRange().getValues();
+    let bookingFound = false;
+    for (let i = verifyData.length - 1; i >= Math.max(1, verifyData.length - 10); i--) {
+      if (verifyData[i][0] === bookingID) {
+        bookingFound = true;
+        break;
+      }
+    }
+
+    // If not found, retry once
+    if (!bookingFound) {
+      Logger.log('WARNING: Booking ' + bookingID + ' not found after first save, retrying...');
+      bookingsSheet.appendRow(bookingRow);
+      SpreadsheetApp.flush();
+      Utilities.sleep(300);
+
+      // Check again
+      const retryData = bookingsSheet.getDataRange().getValues();
+      for (let i = retryData.length - 1; i >= Math.max(1, retryData.length - 10); i--) {
+        if (retryData[i][0] === bookingID) {
+          bookingFound = true;
+          break;
+        }
+      }
+    }
+
+    // EMAIL BACKUP - always send for every booking
+    try {
+      MailApp.sendEmail({
+        to: 'avishj16@gmail.com',
+        subject: bookingFound ? '✅ PotPot Booking: ' + bookingID : '❌ BOOKING FAILED: ' + bookingID,
+        body: 'Booking ID: ' + bookingID +
+              '\nCustomer: ' + (data.customerName || 'N/A') +
+              '\nPhone: ' + (data.phone || 'N/A') +
+              '\nDate: ' + formattedDate +
+              '\nTime: ' + data.timeSlot +
+              '\nPlants: ' + (data.plantCount || 'N/A') +
+              '\nAddress: ' + (data.address || data.fullAddress || 'N/A') +
+              '\nGardener: ' + (data.gardenerName || 'N/A') + ' (' + data.gardenerID + ')' +
+              '\nMap: ' + (data.mapLink || 'N/A') +
+              '\n\n' + (bookingFound ? '✅ Verified in sheet: YES' : '❌ VERIFIED IN SHEET: NO - CHECK IMMEDIATELY!')
+      });
+    } catch (emailError) {
+      Logger.log('Email backup failed: ' + emailError.toString());
+    }
+
+    // Log result
+    Logger.log('Booking ' + bookingID + ' - Verified: ' + bookingFound);
 
     const availSheet = ss.getSheetByName(TABS.AVAILABILITY);
 
