@@ -1491,7 +1491,7 @@
     // EMAIL BACKUP - always send for every booking
     try {
       MailApp.sendEmail({
-        to: 'avishj16@gmail.com',
+        to: 'potpot@atlasventuresonline.com',
         subject: bookingFound ? '✅ PotPot Booking: ' + bookingID : '❌ BOOKING FAILED: ' + bookingID,
         body: 'Booking ID: ' + bookingID +
               '\nCustomer: ' + (data.customerName || 'N/A') +
