@@ -1667,8 +1667,105 @@
   }
 
   // ========================================
+  // DAILY SUMMARY EMAIL - Tomorrow's Bookings
+  // ========================================
+
+  function sendTomorrowBookingsSummary() {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const bookingsSheet = ss.getSheetByName(TABS.BOOKINGS);
+    const bookingsData = bookingsSheet.getDataRange().getValues();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = Utilities.formatDate(tomorrow, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+    const tomorrowFormatted = Utilities.formatDate(tomorrow, Session.getScriptTimeZone(), 'EEE, dd MMM yyyy');
+
+    const tomorrowBookings = [];
+
+    for (let i = 1; i < bookingsData.length; i++) {
+      const bookingDate = bookingsData[i][6];
+      const bookingDateStr = parseDateToFormatted(bookingDate);
+
+      if (bookingDateStr === tomorrowStr) {
+        tomorrowBookings.push({
+          bookingID: bookingsData[i][0],
+          customerName: bookingsData[i][1],
+          phone: bookingsData[i][2],
+          gardenerName: bookingsData[i][5],
+          timeSlot: formatTimeSlotForDisplay(bookingsData[i][7]),
+          plantCount: bookingsData[i][8],
+          address: bookingsData[i][9]
+        });
+      }
+    }
+
+    // Sort by time
+    tomorrowBookings.sort((a, b) => {
+      return timeToMinutes(a.timeSlot) - timeToMinutes(b.timeSlot);
+    });
+
+    // Build email
+    let subject, body;
+
+    if (tomorrowBookings.length === 0) {
+      subject = '📅 PotPot: No bookings for ' + tomorrowFormatted;
+      body = 'No bookings scheduled for tomorrow (' + tomorrowFormatted + ').';
+    } else {
+      subject = '📅 PotPot: ' + tomorrowBookings.length + ' booking(s) for ' + tomorrowFormatted;
+
+      body = 'BOOKINGS FOR TOMORROW: ' + tomorrowFormatted + '\n';
+      body += '='.repeat(50) + '\n\n';
+      body += 'Total: ' + tomorrowBookings.length + ' booking(s)\n\n';
+
+      for (let i = 0; i < tomorrowBookings.length; i++) {
+        const b = tomorrowBookings[i];
+        body += (i + 1) + '. ' + b.timeSlot + ' - ' + b.customerName + '\n';
+        body += '   Phone: ' + b.phone + '\n';
+        body += '   Plants: ' + b.plantCount + '\n';
+        body += '   Gardener: ' + b.gardenerName + '\n';
+        body += '   Address: ' + b.address + '\n';
+        body += '   Booking ID: ' + b.bookingID + '\n';
+        body += '\n';
+      }
+    }
+
+    try {
+      MailApp.sendEmail({
+        to: 'potpot@atlasventuresonline.com',
+        subject: subject,
+        body: body
+      });
+      Logger.log('✅ Daily summary email sent: ' + tomorrowBookings.length + ' bookings');
+    } catch (error) {
+      Logger.log('❌ Failed to send daily summary: ' + error.toString());
+    }
+
+    return { success: true, bookingsCount: tomorrowBookings.length };
+  }
+
+  // ========================================
   // TRIGGER SETUP (Run once after updating)
   // ========================================
+
+  function setupDailySummaryTrigger() {
+    // Remove existing triggers for this function
+    var triggers = ScriptApp.getProjectTriggers();
+    for (var i = 0; i < triggers.length; i++) {
+      if (triggers[i].getHandlerFunction() === 'sendTomorrowBookingsSummary') {
+        ScriptApp.deleteTrigger(triggers[i]);
+      }
+    }
+
+    // Create new trigger at 7 PM IST
+    ScriptApp.newTrigger('sendTomorrowBookingsSummary')
+      .timeBased()
+      .atHour(19)  // 7 PM
+      .everyDays(1)
+      .inTimezone('Asia/Kolkata')
+      .create();
+
+    Logger.log('✅ Daily summary trigger set! sendTomorrowBookingsSummary will run every day at 7 PM IST');
+  }
 
   function setupDailyFollowupTrigger() {
     var triggers = ScriptApp.getProjectTriggers();
