@@ -77,6 +77,21 @@ const SLOT_CONFIG = {
 - `nps_form` - Sent after service completion
 
 ## Recent Changes (2026-01-11)
+
+### NPS Background Queue System (Service Report Speed Fix)
+- **Problem:** Gardeners were waiting too long after submitting service reports (WATI NPS form was blocking)
+- **Solution:** NPS forms now sent in background via queue system
+- **How it works:**
+  1. `saveServiceReport()` calls `scheduleNPSForm()` - adds to queue, returns immediately
+  2. `processNPSQueue()` runs every 1 minute via trigger - sends queued NPS forms
+  3. `setupNPSTrigger()` - run ONCE to set up the 1-minute trigger (already done ✅)
+- **Result:** Service report submission is now instant for gardeners
+
+### Daily Summary Email
+- **Function:** `sendTomorrowBookingsSummary()` - sends email at 7 PM IST with next day's bookings
+- **Trigger:** `setupDailySummaryTrigger()` - run ONCE to set up (already done ✅)
+- **Email to:** potpot@atlasventuresonline.com
+
 ### Critical Bug Fix: Missing Bookings (Silent Save Failures)
 - **Root Cause:** `appendRow()` in Google Apps Script can fail silently without throwing errors
 - **Problem:** Booking ID was generated BEFORE save, so even if save failed, WhatsApp confirmation was sent

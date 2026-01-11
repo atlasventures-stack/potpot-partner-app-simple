@@ -1129,6 +1129,73 @@
   }
 
   // ============================================
+  // NPS FORM BACKGROUND SENDER
+  // ============================================
+
+  function scheduleNPSForm(customerPhone, reportID) {
+    try {
+      // Add to pending NPS queue in PropertiesService
+      const props = PropertiesService.getScriptProperties();
+      const queue = JSON.parse(props.getProperty('npsQueue') || '[]');
+      queue.push({
+        phone: customerPhone,
+        reportID: reportID,
+        timestamp: new Date().toISOString()
+      });
+      props.setProperty('npsQueue', JSON.stringify(queue));
+      Logger.log('NPS queued for: ' + customerPhone);
+    } catch (e) {
+      Logger.log('Failed to queue NPS: ' + e.toString());
+    }
+  }
+
+  function processNPSQueue() {
+    const props = PropertiesService.getScriptProperties();
+    const queue = JSON.parse(props.getProperty('npsQueue') || '[]');
+
+    if (queue.length === 0) {
+      return { processed: 0 };
+    }
+
+    let processed = 0;
+    const failed = [];
+
+    for (const item of queue) {
+      try {
+        sendNPSForm(item.phone);
+        Logger.log('NPS sent to: ' + item.phone + ' (Report: ' + item.reportID + ')');
+        processed++;
+      } catch (e) {
+        Logger.log('NPS failed for: ' + item.phone + ' - ' + e.toString());
+        failed.push(item);
+      }
+    }
+
+    // Keep only failed items in queue for retry
+    props.setProperty('npsQueue', JSON.stringify(failed));
+
+    return { processed: processed, failed: failed.length };
+  }
+
+  function setupNPSTrigger() {
+    // Remove existing NPS triggers
+    var triggers = ScriptApp.getProjectTriggers();
+    for (var i = 0; i < triggers.length; i++) {
+      if (triggers[i].getHandlerFunction() === 'processNPSQueue') {
+        ScriptApp.deleteTrigger(triggers[i]);
+      }
+    }
+
+    // Run every 2 minutes
+    ScriptApp.newTrigger('processNPSQueue')
+      .timeBased()
+      .everyMinutes(1)
+      .create();
+
+    Logger.log('✅ NPS trigger set! processNPSQueue will run every 1 minute');
+  }
+
+  // ============================================
   // SAVE SERVICE REPORT (Partner App)
   // ============================================
 
@@ -1181,10 +1248,9 @@
       data.amount || 0
     ]);
 
-    // Send NPS form to customer after service completion
+    // Schedule NPS form to send in background (gardener doesn't wait)
     if (data.customerPhone) {
-      sendNPSForm(data.customerPhone);
-      Logger.log('NPS form sent to: ' + data.customerPhone);
+      scheduleNPSForm(data.customerPhone, reportID);
     }
 
     return {
