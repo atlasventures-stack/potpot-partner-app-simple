@@ -1129,70 +1129,69 @@
   }
 
   // ============================================
-  // NPS FORM BACKGROUND SENDER
+  // NPS FORM DELAYED SENDER (One-time trigger)
   // ============================================
 
   function scheduleNPSForm(customerPhone, reportID) {
     try {
-      // Add to pending NPS queue in PropertiesService
+      // Create a one-time trigger to run after 2 minutes
+      const trigger = ScriptApp.newTrigger('processDelayedNPS')
+        .timeBased()
+        .after(2 * 60 * 1000) // 2 minutes in milliseconds
+        .create();
+
+      // Store the data for this trigger using its unique ID
       const props = PropertiesService.getScriptProperties();
-      const queue = JSON.parse(props.getProperty('npsQueue') || '[]');
-      queue.push({
+      props.setProperty('nps_' + trigger.getUniqueId(), JSON.stringify({
         phone: customerPhone,
-        reportID: reportID,
-        timestamp: new Date().toISOString()
-      });
-      props.setProperty('npsQueue', JSON.stringify(queue));
-      Logger.log('NPS queued for: ' + customerPhone);
+        reportID: reportID
+      }));
+
+      Logger.log('NPS scheduled for: ' + customerPhone + ' (trigger in 2 min)');
     } catch (e) {
-      Logger.log('Failed to queue NPS: ' + e.toString());
-    }
-  }
-
-  function processNPSQueue() {
-    const props = PropertiesService.getScriptProperties();
-    const queue = JSON.parse(props.getProperty('npsQueue') || '[]');
-
-    if (queue.length === 0) {
-      return { processed: 0 };
-    }
-
-    let processed = 0;
-    const failed = [];
-
-    for (const item of queue) {
+      Logger.log('Failed to schedule NPS: ' + e.toString());
+      // Fallback: try to send immediately if trigger creation fails
       try {
-        sendNPSForm(item.phone);
-        Logger.log('NPS sent to: ' + item.phone + ' (Report: ' + item.reportID + ')');
-        processed++;
-      } catch (e) {
-        Logger.log('NPS failed for: ' + item.phone + ' - ' + e.toString());
-        failed.push(item);
+        sendNPSForm(customerPhone);
+      } catch (e2) {
+        Logger.log('Fallback NPS also failed: ' + e2.toString());
       }
     }
-
-    // Keep only failed items in queue for retry
-    props.setProperty('npsQueue', JSON.stringify(failed));
-
-    return { processed: processed, failed: failed.length };
   }
 
-  function setupNPSTrigger() {
-    // Remove existing NPS triggers
-    var triggers = ScriptApp.getProjectTriggers();
-    for (var i = 0; i < triggers.length; i++) {
-      if (triggers[i].getHandlerFunction() === 'processNPSQueue') {
-        ScriptApp.deleteTrigger(triggers[i]);
+  function processDelayedNPS(e) {
+    try {
+      // Get trigger ID from the event
+      const triggerId = e.triggerUid;
+      const props = PropertiesService.getScriptProperties();
+      const dataKey = 'nps_' + triggerId;
+      const dataStr = props.getProperty(dataKey);
+
+      if (!dataStr) {
+        Logger.log('No NPS data found for trigger: ' + triggerId);
+        return;
       }
+
+      const data = JSON.parse(dataStr);
+
+      // Send the NPS form
+      sendNPSForm(data.phone);
+      Logger.log('✅ NPS sent to: ' + data.phone + ' (Report: ' + data.reportID + ')');
+
+      // Clean up: remove the stored data
+      props.deleteProperty(dataKey);
+
+      // Clean up: delete this trigger (it's one-time but let's be safe)
+      const triggers = ScriptApp.getProjectTriggers();
+      for (const trigger of triggers) {
+        if (trigger.getUniqueId() === triggerId) {
+          ScriptApp.deleteTrigger(trigger);
+          break;
+        }
+      }
+    } catch (error) {
+      Logger.log('❌ processDelayedNPS error: ' + error.toString());
     }
-
-    // Run every 2 minutes
-    ScriptApp.newTrigger('processNPSQueue')
-      .timeBased()
-      .everyMinutes(1)
-      .create();
-
-    Logger.log('✅ NPS trigger set! processNPSQueue will run every 1 minute');
   }
 
   // ============================================

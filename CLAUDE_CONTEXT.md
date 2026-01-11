@@ -78,14 +78,14 @@ const SLOT_CONFIG = {
 
 ## Recent Changes (2026-01-11)
 
-### NPS Background Queue System (Service Report Speed Fix)
+### NPS Delayed Sender (Service Report Speed Fix)
 - **Problem:** Gardeners were waiting too long after submitting service reports (WATI NPS form was blocking)
-- **Solution:** NPS forms now sent in background via queue system
+- **Solution:** NPS forms sent via one-time delayed trigger (no recurring jobs)
 - **How it works:**
-  1. `saveServiceReport()` calls `scheduleNPSForm()` - adds to queue, returns immediately
-  2. `processNPSQueue()` runs every 1 minute via trigger - sends queued NPS forms
-  3. `setupNPSTrigger()` - run ONCE to set up the 1-minute trigger (already done ✅)
-- **Result:** Service report submission is now instant for gardeners
+  1. `saveServiceReport()` calls `scheduleNPSForm()` - creates one-time trigger, returns immediately
+  2. Trigger fires after 2 minutes → `processDelayedNPS()` sends NPS → trigger auto-deletes
+  3. No setup needed - each service report creates its own trigger automatically
+- **Result:** Service report submission is instant, NPS arrives ~2 min later
 
 ### Daily Summary Email
 - **Function:** `sendTomorrowBookingsSummary()` - sends email at 7 PM IST with next day's bookings
