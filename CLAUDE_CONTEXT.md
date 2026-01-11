@@ -1,6 +1,6 @@
 # PotPot Backend & Partner App Context for Claude
 
-**Last Updated:** 2026-01-10
+**Last Updated:** 2026-01-11
 
 ## ONLY THESE 3 LIVE WEBSITES EXIST
 1. https://www.potpot.online - Main website
@@ -15,7 +15,7 @@
 
 ## Current Backend API
 ```
-https://script.google.com/macros/s/AKfycbxqVQ9yryiOEm78MxJgImsNamQojvOAJmKLHBCjEzWoi3M3KZepl2dI1olR7sn_O8wt2w/exec
+https://script.google.com/macros/s/AKfycbzKbtr1sMqsLFp0Jk4LEfK22wpw-MrN5JoNJBRDYsNDzHLVeeR_UEjeCcsFCQ_xEq3HWQ/exec
 ```
 
 ## How to Deploy Backend (Code.gs)
@@ -75,6 +75,17 @@ const SLOT_CONFIG = {
 - `pre_service_com_time` - Day-before reminder
 - `post_service_checkup` - 5-day follow-up
 - `nps_form` - Sent after service completion
+
+## Recent Changes (2026-01-11)
+### Critical Bug Fix: Missing Bookings (Silent Save Failures)
+- **Root Cause:** `appendRow()` in Google Apps Script can fail silently without throwing errors
+- **Problem:** Booking ID was generated BEFORE save, so even if save failed, WhatsApp confirmation was sent
+- **Fix 1:** Added `SpreadsheetApp.flush()` to force write completion
+- **Fix 2:** Added 300ms delay for persistence
+- **Fix 3:** Added verification check - reads sheet to confirm booking exists
+- **Fix 4:** Added retry logic - if booking not found, tries one more time
+- **Fix 5:** Added email backup to potpot@atlasventuresonline.com for EVERY booking
+- **Email subject:** Shows ✅ if verified, ❌ if failed (check immediately)
 
 ## Recent Changes (2026-01-10)
 ### Critical Bug Fix: Duplicate Bookings
