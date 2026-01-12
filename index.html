@@ -1318,20 +1318,20 @@
         const SERVICE_STEPS = [
             {
                 id: 'before_photos',
-                title: 'Before Photos (पहले की फोटो)',
+                title: 'Before Service (सर्विस से पहले)',
                 render: () => `
                     <div class="action-card">
                         <div class="action-card-header">
-                            <h2>📸 Before Photos (पहले की फोटो)</h2>
-                            <p>Take photos of all plants before starting (सर्विस से पहले सभी पौधों की फोटो लें)</p>
+                            <h2>📸 Before Service Photos (सर्विस से पहले फोटो)</h2>
+                            <p>Take photos of all plants before starting work (काम शुरू करने से पहले सभी पौधों की फोटो लें)</p>
                         </div>
                         <div class="action-card-body">
                             <div class="action-hint">
-                                💡 सभी पौधों की वाइड फोटो लें। किसी भी समस्या वाली जगह को भी शामिल करें।
+                                💡 अगर पौधे अलग-अलग जगह पर हैं, तो 2-3 फोटो लें जिसमें ज़्यादातर पौधे दिखें। वाइड शॉट लें।
                             </div>
                             <div class="photo-section">
                                 <div class="photo-section-label">
-                                    📷 Before Photos (कम से कम 2 फोटो)
+                                    📷 Before Service Photos (कम से कम 2 फोटो)
                                 </div>
                                 <div class="photo-grid" id="beforePhotosGrid">
                                     ${renderPhotoGrid('beforePhotos')}
@@ -1371,20 +1371,20 @@
             },
             {
                 id: 'after_photos',
-                title: 'After Photos (बाद की फोटो)',
+                title: 'After Service (सर्विस के बाद)',
                 render: () => `
                     <div class="action-card">
                         <div class="action-card-header">
-                            <h2>📸 After Photos (बाद की फोटो)</h2>
+                            <h2>📸 After Service Photos (सर्विस के बाद फोटो)</h2>
                             <p>Take photos after completing all work (सारा काम पूरा करने के बाद फोटो लें)</p>
                         </div>
                         <div class="action-card-body">
                             <div class="action-hint">
-                                💡 साफ पौधे, गमले और फर्श दिखाएं - वही एंगल जो पहले थे।
+                                💡 वही जगह से 2-3 फोटो लें जहाँ से पहले ली थीं। साफ पौधे, गमले और फर्श दिखाएं।
                             </div>
                             <div class="photo-section">
                                 <div class="photo-section-label">
-                                    📷 After Photos (कम से कम 2 फोटो)
+                                    📷 After Service Photos (कम से कम 2 फोटो)
                                 </div>
                                 <div class="photo-grid" id="afterPhotosGrid">
                                     ${renderPhotoGrid('afterPhotos')}
