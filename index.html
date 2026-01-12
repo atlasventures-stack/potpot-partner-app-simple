@@ -1489,9 +1489,9 @@
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                         <circle cx="12" cy="13" r="4"></circle>
                     </svg>
-                    <span>Add Photos</span>
-                    <input type="file" accept="image/*" multiple style="display:none"
-                           onchange="addPhotos('${type}', this)">
+                    <span>Add Photo</span>
+                    <input type="file" accept="image/*" capture="environment" style="display:none"
+                           onchange="addPhoto('${type}', this)">
                 </label>
             `;
 
@@ -1547,9 +1547,9 @@
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                         <circle cx="12" cy="13" r="4"></circle>
                     </svg>
-                    <span>Add Photos</span>
-                    <input type="file" accept="image/*" multiple style="display:none"
-                           onchange="addRepottedPlantPhotos(${plantIndex}, this)">
+                    <span>Add Photo</span>
+                    <input type="file" accept="image/*" capture="environment" style="display:none"
+                           onchange="addRepottedPlantPhoto(${plantIndex}, this)">
                 </label>
             `;
 
@@ -1573,70 +1573,68 @@
             saveServiceProgress();
         }
 
-        // Upload multiple repotted plant photos - runs in background
-        function addRepottedPlantPhotos(plantIndex, input) {
-            if (!input.files || input.files.length === 0) return;
+        // Upload single repotted plant photo - runs in background
+        function addRepottedPlantPhoto(plantIndex, input) {
+            if (!input.files || !input.files[0]) return;
 
+            const file = input.files[0];
             const grid = document.getElementById(`repottedPlantPhotos_${plantIndex}`);
 
-            // Process each file
-            Array.from(input.files).forEach((file) => {
-                // Create uploading placeholder
-                const uploadingDiv = document.createElement('div');
-                uploadingDiv.className = 'photo-item uploading';
-                uploadingDiv.innerHTML = `
-                    <div class="upload-progress-container">
-                        <div class="upload-spinner"></div>
-                        <div class="upload-progress-bar">
-                            <div class="upload-progress-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="upload-progress-text">0%</div>
+            // Create uploading placeholder
+            const uploadingDiv = document.createElement('div');
+            uploadingDiv.className = 'photo-item uploading';
+            uploadingDiv.innerHTML = `
+                <div class="upload-progress-container">
+                    <div class="upload-spinner"></div>
+                    <div class="upload-progress-bar">
+                        <div class="upload-progress-fill" style="width: 0%"></div>
                     </div>
-                `;
-                grid.insertBefore(uploadingDiv, grid.lastElementChild);
+                    <div class="upload-progress-text">0%</div>
+                </div>
+            `;
+            grid.insertBefore(uploadingDiv, grid.lastElementChild);
 
-                // Upload in background
-                const timestamp = Date.now();
-                const jobId = currentJob?.id || 'unknown';
-                const filename = `${jobId}/repotting/${plantIndex}/${timestamp}_${file.name}`;
+            // Upload in background
+            const timestamp = Date.now();
+            const jobId = currentJob?.id || 'unknown';
+            const filename = `${jobId}/repotting/${plantIndex}/${timestamp}_${file.name}`;
 
-                const storageRef = storage.ref().child(filename);
-                const uploadTask = storageRef.put(file);
+            const storageRef = storage.ref().child(filename);
+            const uploadTask = storageRef.put(file);
 
-                uploadTask.on('state_changed',
-                    (snapshot) => {
-                        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                        const progressFill = uploadingDiv.querySelector('.upload-progress-fill');
-                        const progressText = uploadingDiv.querySelector('.upload-progress-text');
-                        if (progressFill) progressFill.style.width = progress + '%';
-                        if (progressText) progressText.textContent = progress + '%';
-                    },
-                    (error) => {
-                        console.error('Upload error:', error);
-                        uploadingDiv.innerHTML = `
-                            <div class="upload-progress-container" style="color:#d32f2f;">
-                                <span style="font-size:20px;">❌</span>
-                                <div class="upload-progress-text">Failed</div>
-                            </div>
-                        `;
-                        setTimeout(() => uploadingDiv.remove(), 2000);
-                    },
-                    async () => {
-                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                        reportData.repottedPlants[plantIndex].photos.push(downloadURL);
-                        saveServiceProgress();
-                        // Update in place without re-render
-                        const photoIndex = reportData.repottedPlants[plantIndex].photos.length - 1;
-                        uploadingDiv.className = 'photo-item';
-                        uploadingDiv.innerHTML = `
-                            <img src="${downloadURL}" alt="Photo">
-                            <button class="remove-btn" onclick="removeRepottedPlantPhoto(${plantIndex}, ${photoIndex})">×</button>
-                        `;
-                    }
-                );
-            });
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    const progressFill = uploadingDiv.querySelector('.upload-progress-fill');
+                    const progressText = uploadingDiv.querySelector('.upload-progress-text');
+                    if (progressFill) progressFill.style.width = progress + '%';
+                    if (progressText) progressText.textContent = progress + '%';
+                },
+                (error) => {
+                    console.error('Upload error:', error);
+                    uploadingDiv.innerHTML = `
+                        <div class="upload-progress-container" style="color:#d32f2f;">
+                            <span style="font-size:20px;">❌</span>
+                            <div class="upload-progress-text">Failed</div>
+                        </div>
+                    `;
+                    setTimeout(() => uploadingDiv.remove(), 2000);
+                },
+                async () => {
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    reportData.repottedPlants[plantIndex].photos.push(downloadURL);
+                    saveServiceProgress();
+                    // Update in place without re-render
+                    const photoIndex = reportData.repottedPlants[plantIndex].photos.length - 1;
+                    uploadingDiv.className = 'photo-item';
+                    uploadingDiv.innerHTML = `
+                        <img src="${downloadURL}" alt="Photo">
+                        <button class="remove-btn" onclick="removeRepottedPlantPhoto(${plantIndex}, ${photoIndex})">×</button>
+                    `;
+                }
+            );
 
-            // Clear input so same files can be selected again
+            // Clear input so same photo can be taken again
             input.value = '';
         }
 
@@ -1646,38 +1644,36 @@
             renderStep();
         }
 
-        // Upload multiple photos - runs in background, user can continue
-        function addPhotos(type, input) {
-            if (!input.files || input.files.length === 0) return;
+        // Upload single photo - runs in background, user can continue
+        function addPhoto(type, input) {
+            if (!input.files || !input.files[0]) return;
 
+            const file = input.files[0];
             const gridId = type === 'beforePhotos' ? 'beforePhotosGrid' : 'afterPhotosGrid';
             const grid = document.getElementById(gridId);
 
-            // Process each file
-            Array.from(input.files).forEach((file, index) => {
-                // Create uploading placeholder
-                const uploadingDiv = document.createElement('div');
-                uploadingDiv.className = 'photo-item uploading';
-                uploadingDiv.innerHTML = `
-                    <div class="upload-progress-container">
-                        <div class="upload-spinner"></div>
-                        <div class="upload-progress-bar">
-                            <div class="upload-progress-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="upload-progress-text">0%</div>
+            // Create uploading placeholder
+            const uploadingDiv = document.createElement('div');
+            uploadingDiv.className = 'photo-item uploading';
+            uploadingDiv.innerHTML = `
+                <div class="upload-progress-container">
+                    <div class="upload-spinner"></div>
+                    <div class="upload-progress-bar">
+                        <div class="upload-progress-fill" style="width: 0%"></div>
                     </div>
-                `;
-                grid.insertBefore(uploadingDiv, grid.lastElementChild);
+                    <div class="upload-progress-text">0%</div>
+                </div>
+            `;
+            grid.insertBefore(uploadingDiv, grid.lastElementChild);
 
-                // Upload in background
-                uploadPhotoInBackground(file, type, uploadingDiv, (downloadURL) => {
-                    reportData[type].push(downloadURL);
-                    saveServiceProgress();
-                    updatePhotoGridAfterUpload(type, uploadingDiv, downloadURL);
-                });
+            // Upload in background
+            uploadPhotoInBackground(file, type, uploadingDiv, (downloadURL) => {
+                reportData[type].push(downloadURL);
+                saveServiceProgress();
+                updatePhotoGridAfterUpload(type, uploadingDiv, downloadURL);
             });
 
-            // Clear input so same files can be selected again
+            // Clear input so same photo can be taken again
             input.value = '';
         }
 
