@@ -1489,9 +1489,9 @@
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                         <circle cx="12" cy="13" r="4"></circle>
                     </svg>
-                    <span>Add Photo</span>
-                    <input type="file" accept="image/*" capture="environment" style="display:none"
-                           onchange="addPhoto('${type}', this)">
+                    <span>Add Photos</span>
+                    <input type="file" accept="image/*" multiple style="display:none"
+                           onchange="addPhotos('${type}', this)">
                 </label>
             `;
 
@@ -1547,9 +1547,9 @@
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                         <circle cx="12" cy="13" r="4"></circle>
                     </svg>
-                    <span>Add Photo</span>
-                    <input type="file" accept="image/*" capture="environment" style="display:none"
-                           onchange="addRepottedPlantPhoto(${plantIndex}, this)">
+                    <span>Add Photos</span>
+                    <input type="file" accept="image/*" multiple style="display:none"
+                           onchange="addRepottedPlantPhotos(${plantIndex}, this)">
                 </label>
             `;
 
@@ -1573,12 +1573,15 @@
             saveServiceProgress();
         }
 
-        async function addRepottedPlantPhoto(plantIndex, input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const grid = document.getElementById(`repottedPlantPhotos_${plantIndex}`);
+        // Upload multiple repotted plant photos - runs in background
+        function addRepottedPlantPhotos(plantIndex, input) {
+            if (!input.files || input.files.length === 0) return;
 
-                // Show uploading state with progress
+            const grid = document.getElementById(`repottedPlantPhotos_${plantIndex}`);
+
+            // Process each file
+            Array.from(input.files).forEach((file) => {
+                // Create uploading placeholder
                 const uploadingDiv = document.createElement('div');
                 uploadingDiv.className = 'photo-item uploading';
                 uploadingDiv.innerHTML = `
@@ -1592,41 +1595,49 @@
                 `;
                 grid.insertBefore(uploadingDiv, grid.lastElementChild);
 
-                try {
-                    const timestamp = Date.now();
-                    const jobId = currentJob?.id || 'unknown';
-                    const filename = `${jobId}/repotting/${plantIndex}/${timestamp}_${file.name}`;
+                // Upload in background
+                const timestamp = Date.now();
+                const jobId = currentJob?.id || 'unknown';
+                const filename = `${jobId}/repotting/${plantIndex}/${timestamp}_${file.name}`;
 
-                    const storageRef = storage.ref().child(filename);
-                    const uploadTask = storageRef.put(file);
+                const storageRef = storage.ref().child(filename);
+                const uploadTask = storageRef.put(file);
 
-                    // Track upload progress
-                    uploadTask.on('state_changed',
-                        (snapshot) => {
-                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                            const progressFill = uploadingDiv.querySelector('.upload-progress-fill');
-                            const progressText = uploadingDiv.querySelector('.upload-progress-text');
-                            if (progressFill) progressFill.style.width = progress + '%';
-                            if (progressText) progressText.textContent = progress + '%';
-                        },
-                        (error) => {
-                            console.error('Upload error:', error);
-                            alert('Upload failed. Please try again. (अपलोड फेल हुआ, फिर से कोशिश करें)');
-                            uploadingDiv.remove();
-                        },
-                        async () => {
-                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                            reportData.repottedPlants[plantIndex].photos.push(downloadURL);
-                            saveServiceProgress();
-                            renderStep();
-                        }
-                    );
-                } catch (error) {
-                    console.error('Upload error:', error);
-                    alert('Upload failed. Please try again. (अपलोड फेल हुआ, फिर से कोशिश करें)');
-                    uploadingDiv.remove();
-                }
-            }
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                        const progressFill = uploadingDiv.querySelector('.upload-progress-fill');
+                        const progressText = uploadingDiv.querySelector('.upload-progress-text');
+                        if (progressFill) progressFill.style.width = progress + '%';
+                        if (progressText) progressText.textContent = progress + '%';
+                    },
+                    (error) => {
+                        console.error('Upload error:', error);
+                        uploadingDiv.innerHTML = `
+                            <div class="upload-progress-container" style="color:#d32f2f;">
+                                <span style="font-size:20px;">❌</span>
+                                <div class="upload-progress-text">Failed</div>
+                            </div>
+                        `;
+                        setTimeout(() => uploadingDiv.remove(), 2000);
+                    },
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        reportData.repottedPlants[plantIndex].photos.push(downloadURL);
+                        saveServiceProgress();
+                        // Update in place without re-render
+                        const photoIndex = reportData.repottedPlants[plantIndex].photos.length - 1;
+                        uploadingDiv.className = 'photo-item';
+                        uploadingDiv.innerHTML = `
+                            <img src="${downloadURL}" alt="Photo">
+                            <button class="remove-btn" onclick="removeRepottedPlantPhoto(${plantIndex}, ${photoIndex})">×</button>
+                        `;
+                    }
+                );
+            });
+
+            // Clear input so same files can be selected again
+            input.value = '';
         }
 
         function removeRepottedPlantPhoto(plantIndex, photoIndex) {
@@ -1635,12 +1646,16 @@
             renderStep();
         }
 
-        async function addPhoto(type, input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const gridId = type === 'beforePhotos' ? 'beforePhotosGrid' : 'afterPhotosGrid';
-                const grid = document.getElementById(gridId);
+        // Upload multiple photos - runs in background, user can continue
+        function addPhotos(type, input) {
+            if (!input.files || input.files.length === 0) return;
 
+            const gridId = type === 'beforePhotos' ? 'beforePhotosGrid' : 'afterPhotosGrid';
+            const grid = document.getElementById(gridId);
+
+            // Process each file
+            Array.from(input.files).forEach((file, index) => {
+                // Create uploading placeholder
                 const uploadingDiv = document.createElement('div');
                 uploadingDiv.className = 'photo-item uploading';
                 uploadingDiv.innerHTML = `
@@ -1654,41 +1669,60 @@
                 `;
                 grid.insertBefore(uploadingDiv, grid.lastElementChild);
 
-                try {
-                    const timestamp = Date.now();
-                    const jobId = currentJob?.id || 'unknown';
-                    const filename = `${jobId}/${type}/${timestamp}_${file.name}`;
+                // Upload in background
+                uploadPhotoInBackground(file, type, uploadingDiv, (downloadURL) => {
+                    reportData[type].push(downloadURL);
+                    saveServiceProgress();
+                    updatePhotoGridAfterUpload(type, uploadingDiv, downloadURL);
+                });
+            });
 
-                    const storageRef = storage.ref().child(filename);
-                    const uploadTask = storageRef.put(file);
+            // Clear input so same files can be selected again
+            input.value = '';
+        }
 
-                    // Track upload progress
-                    uploadTask.on('state_changed',
-                        (snapshot) => {
-                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                            const progressFill = uploadingDiv.querySelector('.upload-progress-fill');
-                            const progressText = uploadingDiv.querySelector('.upload-progress-text');
-                            if (progressFill) progressFill.style.width = progress + '%';
-                            if (progressText) progressText.textContent = progress + '%';
-                        },
-                        (error) => {
-                            console.error('Upload error:', error);
-                            alert('Upload failed. Please try again. (अपलोड फेल हुआ, फिर से कोशिश करें)');
-                            uploadingDiv.remove();
-                        },
-                        async () => {
-                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                            reportData[type].push(downloadURL);
-                            saveServiceProgress();
-                            renderStep();
-                        }
-                    );
-                } catch (error) {
+        // Background upload helper
+        function uploadPhotoInBackground(file, type, uploadingDiv, onSuccess) {
+            const timestamp = Date.now();
+            const jobId = currentJob?.id || 'unknown';
+            const filename = `${jobId}/${type}/${timestamp}_${file.name}`;
+
+            const storageRef = storage.ref().child(filename);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    const progressFill = uploadingDiv.querySelector('.upload-progress-fill');
+                    const progressText = uploadingDiv.querySelector('.upload-progress-text');
+                    if (progressFill) progressFill.style.width = progress + '%';
+                    if (progressText) progressText.textContent = progress + '%';
+                },
+                (error) => {
                     console.error('Upload error:', error);
-                    alert('Upload failed. Please try again. (अपलोड फेल हुआ, फिर से कोशिश करें)');
-                    uploadingDiv.remove();
+                    uploadingDiv.innerHTML = `
+                        <div class="upload-progress-container" style="color:#d32f2f;">
+                            <span style="font-size:20px;">❌</span>
+                            <div class="upload-progress-text">Failed</div>
+                        </div>
+                    `;
+                    setTimeout(() => uploadingDiv.remove(), 2000);
+                },
+                async () => {
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    onSuccess(downloadURL);
                 }
-            }
+            );
+        }
+
+        // Update grid after upload without full re-render
+        function updatePhotoGridAfterUpload(type, uploadingDiv, downloadURL) {
+            const index = reportData[type].length - 1;
+            uploadingDiv.className = 'photo-item';
+            uploadingDiv.innerHTML = `
+                <img src="${downloadURL}" alt="Photo">
+                <button class="remove-btn" onclick="removePhoto('${type}', ${index})">×</button>
+            `;
         }
 
         function removePhoto(type, index) {
