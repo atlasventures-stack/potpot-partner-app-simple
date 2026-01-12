@@ -273,10 +273,6 @@
             margin-bottom: 10px;
         }
 
-        .job-time-icon {
-            font-size: 14px;
-        }
-
         .job-notes {
             background: #fff8e1;
             border: 1px solid #ffe082;
@@ -476,16 +472,9 @@
             color: #2e7d32;
         }
 
-        .guide-btn {
-            background: none;
-            border: none;
-            color: #2e7d32;
+        .step-indicator {
             font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            color: #888;
         }
 
         .progress-bar {
@@ -508,8 +497,8 @@
             overflow-y: auto;
         }
 
-        /* Step Cards */
-        .step-card {
+        /* Action Card Styles */
+        .action-card {
             background: white;
             border-radius: 16px;
             overflow: hidden;
@@ -517,197 +506,50 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
-        .step-card-header {
-            background: #e8f5e9;
-            padding: 14px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #c8e6c9;
-        }
-
-        .step-card-header h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #2e7d32;
-        }
-
-        .step-card-header .hindi {
-            font-size: 13px;
-            color: #666;
-        }
-
-        .step-card-body {
-            padding: 16px 20px;
-        }
-
-        .step-card-body ul {
-            list-style: none;
-        }
-
-        .step-card-body li {
-            padding: 10px 0;
-            font-size: 14px;
-            color: #333;
-            line-height: 1.5;
-            padding-left: 18px;
-            position: relative;
-        }
-
-        .step-card-body li::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            background: #4caf50;
-            border-radius: 50%;
-            position: absolute;
-            left: 0;
-            top: 16px;
-        }
-
-        .step-card-body li .hindi {
-            display: block;
-            font-size: 13px;
-            color: #666;
-            margin-top: 4px;
-            font-style: italic;
-        }
-
-        /* Warning & Info Boxes */
-        .warning-box {
-            background: #ffebee;
-            border: 1px solid #ffcdd2;
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            color: #c62828;
-        }
-
-        .warning-box .hindi {
-            display: block;
-            margin-top: 6px;
-            font-size: 13px;
-            opacity: 0.85;
-            font-style: italic;
-        }
-
-        .info-box {
-            background: #e3f2fd;
-            border: 1px solid #90caf9;
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            color: #1565c0;
-        }
-
-        .info-box .hindi {
-            display: block;
-            margin-top: 6px;
-            font-size: 13px;
-            opacity: 0.85;
-            font-style: italic;
-        }
-
-        .neutral-box {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            color: #333;
-            text-align: center;
-        }
-
-        .neutral-box .hindi {
-            display: block;
-            margin-top: 6px;
-            font-size: 13px;
-            color: #666;
-            font-style: italic;
-        }
-
-        /* Health Cards */
-        .health-card {
-            border-radius: 16px;
+        .action-card-header {
+            background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
             padding: 20px;
-            margin-bottom: 16px;
+            color: white;
         }
 
-        .health-card.healthy {
-            background: #e8f5e9;
-            border: 1px solid #a5d6a7;
-        }
-
-        .health-card.infected {
-            background: #ffebee;
-            border: 1px solid #ffcdd2;
-        }
-
-        .health-card h3 {
-            font-size: 18px;
+        .action-card-header h2 {
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin-bottom: 4px;
         }
 
-        .health-card.healthy h3 {
-            color: #2e7d32;
-        }
-
-        .health-card.infected h3 {
-            color: #c62828;
-        }
-
-        .health-card ul {
-            list-style: disc;
-            padding-left: 20px;
-        }
-
-        .health-card li {
-            padding: 6px 0;
+        .action-card-header p {
             font-size: 14px;
-            line-height: 1.5;
+            opacity: 0.9;
         }
 
-        .health-card li .hindi {
-            display: block;
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 2px;
-            font-style: italic;
+        .action-card-body {
+            padding: 20px;
         }
 
-        .health-card.healthy li {
-            color: #1b5e20;
-        }
-
-        .health-card.infected li {
-            color: #b71c1c;
-        }
-
-        .health-card li strong {
-            font-weight: 700;
+        .action-hint {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #5d4037;
         }
 
         /* Photo Section */
         .photo-section {
-            border-top: 1px solid #eee;
-            padding-top: 16px;
-            margin-top: 8px;
+            margin-top: 16px;
         }
 
         .photo-section-label {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 700;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #333;
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .photo-grid {
@@ -752,34 +594,121 @@
         .photo-add {
             width: 100px;
             height: 100px;
-            border: 2px dashed #ccc;
+            border: 2px dashed #4caf50;
             border-radius: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            background: #fafafa;
+            background: #f1f8e9;
             transition: all 0.2s;
             flex-shrink: 0;
         }
 
         .photo-add:hover {
-            border-color: #4caf50;
-            background: #f5f5f5;
+            background: #e8f5e9;
         }
 
         .photo-add svg {
-            width: 24px;
-            height: 24px;
-            color: #999;
-            margin-bottom: 2px;
+            width: 28px;
+            height: 28px;
+            color: #4caf50;
+            margin-bottom: 4px;
         }
 
         .photo-add span {
-            font-size: 11px;
+            font-size: 12px;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        /* Repotting Plant Selection */
+        .plant-selection {
+            margin-top: 16px;
+        }
+
+        .plant-selection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .plant-selection-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .add-plant-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .plant-item {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .plant-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .plant-item-name {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plant-item-remove {
+            background: #ffebee;
+            color: #c62828;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .plant-name-input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .plant-name-input:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+
+        .no-repotting-msg {
+            text-align: center;
+            padding: 30px 20px;
             color: #888;
-            font-weight: 500;
+            background: #f9f9f9;
+            border-radius: 12px;
+            border: 2px dashed #e0e0e0;
         }
 
         /* Report Form */
@@ -826,10 +755,6 @@
             background: white;
         }
 
-        .report-input::placeholder {
-            color: #bbb;
-        }
-
         .red-zone-textarea {
             width: 100%;
             min-height: 100px;
@@ -842,10 +767,6 @@
             resize: vertical;
             font-family: inherit;
             line-height: 1.5;
-        }
-
-        .red-zone-textarea::placeholder {
-            color: #999;
         }
 
         .red-zone-textarea:focus {
@@ -885,6 +806,10 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+        }
+
+        .service-footer .btn-next:disabled {
+            background: #a5d6a7;
         }
 
         /* ===== COMPLETE SCREEN ===== */
@@ -1155,20 +1080,6 @@
             color: #c62828;
         }
 
-        .red-zone-preview {
-            margin-top: 12px;
-            padding: 12px;
-            background: #fff5f5;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #c62828;
-        }
-
-        .red-zone-preview strong {
-            display: block;
-            margin-bottom: 4px;
-        }
-
         /* ===== SPLASH LOADING ===== */
         .splash-screen {
             min-height: 100vh;
@@ -1249,7 +1160,7 @@
                         <span class="input-icon">🔒</span>
                         <input type="tel" id="otpInput" placeholder="4 अंक का OTP" maxlength="4">
                     </div>
-                    <p class="hint">OTP is the last 4 digits of your phone number (आपके नंबर के आखिरी 4 अंक)</p>
+                    <p class="hint">OTP is the last 4 digits of your phone number <span class="hindi">(आपके नंबर के आखिरी 4 अंक)</span></p>
                 </div>
                 <button class="btn btn-primary" onclick="handleOtpSubmit()">Login <span class="hindi">(लॉगिन)</span></button>
                 <button class="btn btn-secondary" onclick="backToPhone()">Change Number <span class="hindi">(नंबर बदलें)</span></button>
@@ -1292,8 +1203,8 @@
             <div class="service-header">
                 <div class="service-header-top">
                     <button class="exit-btn" onclick="exitService()">EXIT <span class="hindi">(बाहर)</span></button>
-                    <span id="stepTitle" class="step-title">Steps 1 & 2</span>
-                    <button class="guide-btn">📋 GUIDE <span class="hindi">(गाइड)</span></button>
+                    <span id="stepTitle" class="step-title">Start Service</span>
+                    <span id="stepIndicator" class="step-indicator">1/4</span>
                 </div>
                 <div class="progress-bar">
                     <div id="progressFill" class="progress-fill" style="width: 0%"></div>
@@ -1305,7 +1216,7 @@
             <div class="service-footer">
                 <button class="btn btn-back" onclick="prevStep()">Back <span class="hindi">(पीछे)</span></button>
                 <button id="nextBtn" class="btn btn-next" onclick="nextStep()">
-                    Next Step <span class="hindi">(अगला)</span> <span>›</span>
+                    Next <span class="hindi">(अगला)</span> <span>→</span>
                 </button>
             </div>
         </div>
@@ -1393,7 +1304,8 @@
             totalPlants: '',
             redZonePlants: '',
             beforePhotos: [],
-            afterPhotos: []
+            afterPhotos: [],
+            repottedPlants: [] // [{name: 'Money Plant', photos: ['url1', 'url2']}]
         };
         // Admin state
         let allReports = [];
@@ -1401,38 +1313,26 @@
         let gardenersList = [];
 
         // ============================================
-        // SERVICE STEPS - Matching Mockups
+        // SIMPLIFIED SERVICE STEPS - 4 Action-Oriented Screens
         // ============================================
         const SERVICE_STEPS = [
             {
-                id: 'screen_1',
-                title: 'Steps 1 & 2',
+                id: 'start_service',
+                title: 'Start Service',
                 render: () => `
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 1: Greeting</h3>
-                            <span class="hindi">(अभिवादन)</span>
+                    <div class="action-card">
+                        <div class="action-card-header">
+                            <h2>📸 Before Photos</h2>
+                            <p>Take photos of all plants before starting</p>
                         </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Say: "Namaste, PotPot service" with smile.<br><span class="hindi">(मुस्कुराते हुए कहें: "नमस्ते, पॉटपॉट सर्विस")</span></li>
-                                <li>Ask: "Any concerns with the plants?"<br><span class="hindi">(पूछें: "पौधों में कोई परेशानी?")</span></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 2: Before Photos</h3>
-                            <span class="hindi">(पहले फोटो)</span>
-                        </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Take multiple wide shots of all plant areas.<br><span class="hindi">(सभी पौधों की जगह की वाइड फोटो लें)</span></li>
-                                <li>Take close-ups of any specific issues.<br><span class="hindi">(किसी भी समस्या की क्लोज़-अप फोटो लें)</span></li>
-                            </ul>
+                        <div class="action-card-body">
+                            <div class="action-hint">
+                                💡 Take wide shots covering all plant areas. Include any problem areas.
+                            </div>
                             <div class="photo-section">
-                                <div class="photo-section-label">Photos (फोटो)</div>
+                                <div class="photo-section-label">
+                                    📷 Before Photos (कम से कम 2 फोटो)
+                                </div>
                                 <div class="photo-grid" id="beforePhotosGrid">
                                     ${renderPhotoGrid('beforePhotos')}
                                 </div>
@@ -1442,159 +1342,50 @@
                 `
             },
             {
-                id: 'screen_2',
-                title: 'Steps 3 & 4',
+                id: 'repotting',
+                title: 'Repotting',
                 render: () => `
-                    <div class="warning-box">
-                        ⚠️ 🚫 Clean blade between plants! Never remove >30% of plant.<br>
-                        <span class="hindi">(हर पौधे के बाद ब्लेड साफ करें! 30% से ज़्यादा न काटें)</span>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 3: Pruning</h3>
-                            <span class="hindi">(छंटाई)</span>
+                    <div class="action-card">
+                        <div class="action-card-header">
+                            <h2>🪴 Repotting</h2>
+                            <p>Add plants that need repotting</p>
                         </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Cut main stem tip to make plant bushy.<br><span class="hindi">(पौधे को घना बनाने के लिए मुख्य तने की नोक काटें)</span></li>
-                                <li>Cut 1cm above node at 45°.<br><span class="hindi">(गांठ से 1cm ऊपर 45° पर काटें)</span></li>
-                                <li>Remove yellow/dead leaves and dead flowers.<br><span class="hindi">(पीली/सूखी पत्तियां और मुरझाए फूल हटाएं)</span></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 4: Soil Loosening</h3>
-                            <span class="hindi">(गुड़ाई)</span>
-                        </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Dig top 2-3 cm around edges of pot.<br><span class="hindi">(गमले के किनारों पर ऊपर के 2-3 cm खोदें)</span></li>
-                                <li>Do NOT dig deep near the center (protect roots).<br><span class="hindi">(बीच में गहरा मत खोदें - जड़ों को बचाएं)</span></li>
-                            </ul>
+                        <div class="action-card-body">
+                            <div class="action-hint">
+                                💡 Click "Add Plant" for each plant you repot. Take a photo after repotting each one.
+                            </div>
+                            <div class="plant-selection">
+                                <div class="plant-selection-header">
+                                    <span class="plant-selection-label">Repotted Plants</span>
+                                    <button class="add-plant-btn" onclick="addRepottedPlant()">
+                                        + Add Plant
+                                    </button>
+                                </div>
+                                <div id="repottedPlantsList">
+                                    ${renderRepottedPlants()}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `
             },
             {
-                id: 'screen_3',
-                title: 'Step 5',
+                id: 'after_photos',
+                title: 'After Photos',
                 render: () => `
-                    <div class="neutral-box">
-                        Compare each plant and treat accordingly.<br>
-                        <span class="hindi">(हर पौधे को देखें और उसके हिसाब से ट्रीट करें)</span>
-                    </div>
-
-                    <div class="info-box">
-                        ℹ️ Nov-Feb: NO fertilizer for anyone.<br>
-                        <span class="hindi">(नवंबर-फरवरी: किसी को भी खाद नहीं)</span>
-                    </div>
-
-                    <div class="health-card healthy">
-                        <h3>🌿 Healthy Plants <span class="hindi">(स्वस्थ पौधे)</span></h3>
-                        <ul>
-                            <li>Apply Fertilizers (Vermi + Coco + DAP)<br><span class="hindi">(खाद डालें - वर्मी + कोको + DAP)</span></li>
-                            <li>Plain water spray on leaves<br><span class="hindi">(पत्तियों पर सादा पानी स्प्रे करें)</span></li>
-                            <li>Wipe leaves clean with damp cloth<br><span class="hindi">(गीले कपड़े से पत्तियां साफ करें)</span></li>
-                        </ul>
-                    </div>
-
-                    <div class="health-card infected">
-                        <h3>🐛 Infected Plants <span class="hindi">(बीमार पौधे)</span></h3>
-                        <ul>
-                            <li>Apply Pesticides (Neem / SAAF)<br><span class="hindi">(दवाई डालें - नीम / SAAF)</span></li>
-                            <li>Medicine spray on leaves<br><span class="hindi">(पत्तियों पर दवाई स्प्रे करें)</span></li>
-                            <li><strong>NO FERTILIZER</strong><br><span class="hindi"><strong>(खाद नहीं देनी)</strong></span></li>
-                            <li><strong>DO NOT WIPE leaves</strong><br><span class="hindi"><strong>(पत्तियां मत पोंछें)</strong></span></li>
-                        </ul>
-                    </div>
-                `
-            },
-            {
-                id: 'screen_4',
-                title: 'Steps 6 & 7',
-                render: () => `
-                    <div class="warning-box">
-                        ⚠️ If infected: Do NOT wipe leaves, only clean pot.<br>
-                        <span class="hindi">(बीमार पौधे की पत्तियां मत पोंछें, सिर्फ गमला साफ करें)</span>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 6: Cleaning</h3>
-                            <span class="hindi">(सफाई)</span>
+                    <div class="action-card">
+                        <div class="action-card-header">
+                            <h2>📸 After Photos</h2>
+                            <p>Take photos after completing all work</p>
                         </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Wipe large leaves with damp cloth.<br><span class="hindi">(बड़ी पत्तियां गीले कपड़े से पोंछें)</span></li>
-                                <li>Wipe pot exterior and saucer.<br><span class="hindi">(गमले का बाहरी हिस्सा और प्लेट साफ करें)</span></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 7: Watering</h3>
-                            <span class="hindi">(पानी देना)</span>
-                        </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Check moisture meter first!<br><span class="hindi">(पहले नमी मीटर चेक करें!)</span></li>
-                                <li>Water at soil level until drainage.<br><span class="hindi">(मिट्टी में पानी दें जब तक नीचे से न आ जाए)</span></li>
-                                <li>Empty saucer after 30 mins.<br><span class="hindi">(30 मिनट बाद प्लेट खाली करें)</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                `
-            },
-            {
-                id: 'screen_5',
-                title: 'Steps 8 & 9',
-                render: () => `
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 8: Floor & Drainage</h3>
-                            <span class="hindi">(फर्श और ड्रेनेज)</span>
-                        </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Ensure every pot has a hole.<br><span class="hindi">(हर गमले में छेद होना चाहिए)</span></li>
-                                <li>Sweep fallen leaves/soil. Wipe water spills.<br><span class="hindi">(गिरी पत्तियां/मिट्टी झाड़ें, पानी पोंछें)</span></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 9: Garbage</h3>
-                            <span class="hindi">(कचरा)</span>
-                        </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Take all green waste with you.<br><span class="hindi">(सारा हरा कचरा अपने साथ ले जाएं)</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                `
-            },
-            {
-                id: 'screen_6',
-                title: 'Step 10',
-                render: () => `
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 10: After Photos</h3>
-                            <span class="hindi">(बाद की फोटो)</span>
-                        </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Take photos from same angles.<br><span class="hindi">(उन्हीं कोणों से फोटो लें)</span></li>
-                                <li>Show clean plants, clean pots, clean floor.<br><span class="hindi">(साफ पौधे, साफ गमले, साफ फर्श दिखाएं)</span></li>
-                            </ul>
+                        <div class="action-card-body">
+                            <div class="action-hint">
+                                💡 Show the clean plants, pots, and floor from the same angles as before photos.
+                            </div>
                             <div class="photo-section">
-                                <div class="photo-section-label">Photos (फोटो)</div>
+                                <div class="photo-section-label">
+                                    📷 After Photos (कम से कम 2 फोटो)
+                                </div>
                                 <div class="photo-grid" id="afterPhotosGrid">
                                     ${renderPhotoGrid('afterPhotos')}
                                 </div>
@@ -1604,54 +1395,29 @@
                 `
             },
             {
-                id: 'screen_7',
-                title: 'Steps 11 & 12',
-                render: () => `
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 11: Care Tips</h3>
-                            <span class="hindi">(टिप्स)</span>
-                        </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Explain medicines to customer.<br><span class="hindi">(कस्टमर को दवाइयों के बारे में बताएं)</span></li>
-                                <li>Answer questions.<br><span class="hindi">(सवालों का जवाब दें)</span></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-card-header">
-                            <h3>Step 12: Schedule</h3>
-                            <span class="hindi">(अगला चेक-अप)</span>
-                        </div>
-                        <div class="step-card-body">
-                            <ul>
-                                <li>Say: "4-5 दिन बाद हम आएंगे फ्री चेक-अप के लिए!"<br><span class="hindi">(कहें: "4-5 दिन बाद फ्री चेक-अप के लिए आएंगे!")</span></li>
-                                <li>Next Full Service in ~25-30 days.<br><span class="hindi">(अगली फुल सर्विस ~25-30 दिन में)</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                `
-            },
-            {
-                id: 'screen_8',
-                title: 'Final Report (फाइनल रिपोर्ट)',
+                id: 'complete',
+                title: 'Complete Service',
                 isLast: true,
                 render: () => `
-                    <div class="report-card">
-                        <div class="report-field">
-                            <label>Total Plants Serviced <span class="hindi">(कुल पौधे सर्विस किए)</span></label>
-                            <input type="number" class="report-input" id="totalPlantsInput"
-                                   placeholder="जैसे: 25" value="${reportData.totalPlants}"
-                                   onchange="reportData.totalPlants = this.value">
+                    <div class="action-card">
+                        <div class="action-card-header">
+                            <h2>✅ Complete Service</h2>
+                            <p>Final details before finishing</p>
                         </div>
+                        <div class="action-card-body">
+                            <div class="report-field">
+                                <label>Total Plants Serviced</label>
+                                <input type="number" class="report-input" id="totalPlantsInput"
+                                       placeholder="e.g. 25" value="${reportData.totalPlants}"
+                                       onchange="reportData.totalPlants = this.value">
+                            </div>
 
-                        <div class="report-field">
-                            <label class="red">Red Zone Plants (Critical) <span class="hindi">(बीमार पौधे)</span></label>
-                            <textarea class="red-zone-textarea" id="redZonePlantsInput"
-                                      placeholder="Write sick/infected plants here... (बीमार पौधे यहां लिखें)&#10;e.g. Rose - Fungus, Money Plant - Yellow leaves"
-                                      onchange="reportData.redZonePlants = this.value">${reportData.redZonePlants}</textarea>
+                            <div class="report-field">
+                                <label class="red">Red Zone / Sick Plants (optional)</label>
+                                <textarea class="red-zone-textarea" id="redZonePlantsInput"
+                                          placeholder="List any sick or infected plants...&#10;e.g. Rose - Fungus, Money Plant - Yellow leaves"
+                                          onchange="reportData.redZonePlants = this.value">${reportData.redZonePlants}</textarea>
+                            </div>
                         </div>
                     </div>
                 `
@@ -1673,11 +1439,10 @@
             html += `
                 <label class="photo-add">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
                     </svg>
-                    <span>📷 Upload</span>
+                    <span>Add Photo</span>
                     <input type="file" accept="image/*" capture="environment" style="display:none"
                            onchange="addPhoto('${type}', this)">
                 </label>
@@ -1686,29 +1451,138 @@
             return html;
         }
 
-        async function addPhoto(type, input) {
+        function renderRepottedPlants() {
+            const plants = reportData.repottedPlants || [];
+
+            if (plants.length === 0) {
+                return `
+                    <div class="no-repotting-msg">
+                        No plants repotted yet.<br>
+                        <small>Click "Add Plant" if you repot any plant.</small>
+                    </div>
+                `;
+            }
+
+            return plants.map((plant, i) => `
+                <div class="plant-item">
+                    <div class="plant-item-header">
+                        <span class="plant-item-name">🪴 Plant ${i + 1}</span>
+                        <button class="plant-item-remove" onclick="removeRepottedPlant(${i})">Remove</button>
+                    </div>
+                    <input type="text" class="plant-name-input"
+                           placeholder="Plant name (e.g. Money Plant)"
+                           value="${plant.name || ''}"
+                           onchange="updatePlantName(${i}, this.value)">
+                    <div class="photo-section">
+                        <div class="photo-section-label">📷 Photo after repotting</div>
+                        <div class="photo-grid" id="repottedPlantPhotos_${i}">
+                            ${renderRepottedPlantPhotos(i)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderRepottedPlantPhotos(plantIndex) {
+            const plant = reportData.repottedPlants[plantIndex];
+            const photos = plant?.photos || [];
+
+            let html = photos.map((photo, i) => `
+                <div class="photo-item">
+                    <img src="${photo}" alt="Photo ${i+1}">
+                    <button class="remove-btn" onclick="removeRepottedPlantPhoto(${plantIndex}, ${i})">×</button>
+                </div>
+            `).join('');
+
+            html += `
+                <label class="photo-add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    <span>Add Photo</span>
+                    <input type="file" accept="image/*" capture="environment" style="display:none"
+                           onchange="addRepottedPlantPhoto(${plantIndex}, this)">
+                </label>
+            `;
+
+            return html;
+        }
+
+        function addRepottedPlant() {
+            reportData.repottedPlants.push({ name: '', photos: [] });
+            saveServiceProgress();
+            renderStep();
+        }
+
+        function removeRepottedPlant(index) {
+            reportData.repottedPlants.splice(index, 1);
+            saveServiceProgress();
+            renderStep();
+        }
+
+        function updatePlantName(index, name) {
+            reportData.repottedPlants[index].name = name;
+            saveServiceProgress();
+        }
+
+        async function addRepottedPlantPhoto(plantIndex, input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
+                const grid = document.getElementById(`repottedPlantPhotos_${plantIndex}`);
 
                 // Show uploading state
-                const grid = document.getElementById(type === 'beforePhotos' ? 'beforePhotosGrid' : 'afterPhotosGrid');
                 const uploadingDiv = document.createElement('div');
                 uploadingDiv.className = 'photo-item uploading';
                 uploadingDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:12px;">Uploading...</div>';
                 grid.insertBefore(uploadingDiv, grid.lastElementChild);
 
                 try {
-                    // Create unique filename
                     const timestamp = Date.now();
                     const jobId = currentJob?.id || 'unknown';
-                    const filename = `${jobId}/${type}/${timestamp}_${file.name}`;
+                    const filename = `${jobId}/repotting/${plantIndex}/${timestamp}_${file.name}`;
 
-                    // Upload to Firebase Storage
                     const storageRef = storage.ref().child(filename);
                     const snapshot = await storageRef.put(file);
                     const downloadURL = await snapshot.ref.getDownloadURL();
 
-                    // Store URL instead of base64
+                    reportData.repottedPlants[plantIndex].photos.push(downloadURL);
+                    saveServiceProgress();
+                    renderStep();
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    alert('Failed to upload photo. Please try again.');
+                    uploadingDiv.remove();
+                }
+            }
+        }
+
+        function removeRepottedPlantPhoto(plantIndex, photoIndex) {
+            reportData.repottedPlants[plantIndex].photos.splice(photoIndex, 1);
+            saveServiceProgress();
+            renderStep();
+        }
+
+        async function addPhoto(type, input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const gridId = type === 'beforePhotos' ? 'beforePhotosGrid' : 'afterPhotosGrid';
+                const grid = document.getElementById(gridId);
+
+                const uploadingDiv = document.createElement('div');
+                uploadingDiv.className = 'photo-item uploading';
+                uploadingDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:12px;">Uploading...</div>';
+                grid.insertBefore(uploadingDiv, grid.lastElementChild);
+
+                try {
+                    const timestamp = Date.now();
+                    const jobId = currentJob?.id || 'unknown';
+                    const filename = `${jobId}/${type}/${timestamp}_${file.name}`;
+
+                    const storageRef = storage.ref().child(filename);
+                    const snapshot = await storageRef.put(file);
+                    const downloadURL = await snapshot.ref.getDownloadURL();
+
                     reportData[type].push(downloadURL);
                     saveServiceProgress();
                     renderStep();
@@ -1750,42 +1624,35 @@
             }
             hideLoginError();
 
-            // Show loading state
             const btn = document.querySelector('#otpStep .btn-primary');
             btn.disabled = true;
             btn.textContent = 'Checking...';
 
-            // Auto-detect: Try admin first, then gardener
             try {
                 const adminResponse = await fetch(`${API_URL}?action=getAdminReports&phone=${currentUser.phone}`);
                 const adminData = await adminResponse.json();
 
                 if (adminData.success) {
-                    // User is admin
                     currentUser.name = adminData.adminName;
                     currentUser.isAdmin = true;
-                    saveSession(currentUser); // Save session
+                    saveSession(currentUser);
 
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('adminDashboard').classList.remove('hidden');
                     document.getElementById('adminWelcome').textContent = `Welcome, ${adminData.adminName}`;
 
-                    // Hide loading, show content
                     document.getElementById('reportsLoading').classList.add('hidden');
 
-                    // Get today's bookings
                     allReports = adminData.bookings || [];
                     gardenersList = adminData.gardeners || [];
                     populateGardenerFilter();
                     filteredReports = [...allReports];
                     renderBookings();
                 } else {
-                    // Not admin, try gardener
                     showDashboard();
                 }
             } catch (error) {
                 console.error('Error:', error);
-                // Fallback to gardener
                 showDashboard();
             }
 
@@ -1811,7 +1678,7 @@
         }
 
         function handleLogout() {
-            clearSession(); // Clear saved session
+            clearSession();
             currentUser = null;
             jobs = [];
             allReports = [];
@@ -1848,7 +1715,6 @@
                     document.getElementById('welcomeText').textContent = `Welcome, ${data.gardener.name}`;
                     jobs = data.jobs || [];
                     renderJobs();
-                    // Check for in-progress service
                     checkInProgressService();
                 } else {
                     showLoginError(data.error || 'Gardener not found');
@@ -1864,11 +1730,9 @@
         function renderJobs() {
             const jobsList = document.getElementById('jobsList');
 
-            // Check for ongoing job (in-progress service)
             const savedProgress = loadServiceProgress();
             const ongoingJobId = savedProgress ? String(savedProgress.jobId) : null;
 
-            // Categorize jobs
             const completedJobs = jobs.filter(j => j.status === 'COMPLETED');
             const ongoingJob = ongoingJobId ? jobs.find(j => String(j.id) === ongoingJobId && j.status !== 'COMPLETED') : null;
             const upcomingJobs = jobs.filter(j => j.status !== 'COMPLETED' && String(j.id) !== ongoingJobId);
@@ -1881,11 +1745,9 @@
                 return;
             }
 
-            // Sort upcoming jobs by time slot (earliest first - closest to current time at top)
             upcomingJobs.sort((a, b) => {
-                // Parse time slot to get start time (e.g., "8:00 AM - 9:00 AM" -> 8:00 AM)
                 const getTimeValue = (timeSlot) => {
-                    if (!timeSlot) return 24 * 60; // Put jobs without time at the end
+                    if (!timeSlot) return 24 * 60;
                     const match = timeSlot.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
                     if (!match) return 24 * 60;
                     let hours = parseInt(match[1]);
@@ -1895,13 +1757,9 @@
                     if (period === 'AM' && hours === 12) hours = 0;
                     return hours * 60 + mins;
                 };
-
-                const timeA = getTimeValue(a.timeSlot);
-                const timeB = getTimeValue(b.timeSlot);
-                return timeA - timeB; // Ascending: earliest time first
+                return getTimeValue(a.timeSlot) - getTimeValue(b.timeSlot);
             });
 
-            // Render job card helper
             const renderJobCard = (job, index, status) => `
                 <div class="job-card ${status}" data-job-index="${index}">
                     <div class="job-header">
@@ -1927,11 +1785,11 @@
                     ${status !== 'completed' ? `
                         <div class="job-actions">
                             <button class="btn-start">
-                                ${status === 'ongoing' ? '▶️ Continue (जारी)' : '▶️ Start (शुरू)'}
+                                ${status === 'ongoing' ? '▶️ Continue' : '▶️ Start'}
                             </button>
                             ${job.mapLink ? `
                                 <button class="map-btn" data-map-link="${encodeURIComponent(job.mapLink)}">
-                                    📍 Map (मैप)
+                                    📍 Map
                                 </button>
                             ` : ''}
                         </div>
@@ -1941,27 +1799,24 @@
 
             let html = '';
 
-            // 1. Ongoing section (if there's an in-progress job)
             if (ongoingJob) {
                 html += `
                     <div class="ongoing-section">
-                        <div class="ongoing-section-title">🔄 Ongoing Visit (जारी विज़िट)</div>
+                        <div class="ongoing-section-title">🔄 Ongoing Visit</div>
                         ${renderJobCard(ongoingJob, jobs.indexOf(ongoingJob), 'ongoing')}
                     </div>
                 `;
             }
 
-            // 2. Upcoming section
             if (upcomingJobs.length > 0) {
-                html += `<div class="upcoming-section-title">📋 Upcoming Visits (आने वाली विज़िट)</div>`;
+                html += `<div class="upcoming-section-title">📋 Upcoming Visits</div>`;
                 html += upcomingJobs.map((job, i) => renderJobCard(job, jobs.indexOf(job), 'upcoming')).join('');
             }
 
-            // 3. Completed section
             if (completedJobs.length > 0) {
                 html += `
                     <div class="completed-section">
-                        <div class="completed-section-title">✅ Completed Today (आज पूरे हुए)</div>
+                        <div class="completed-section-title">✅ Completed Today</div>
                         ${completedJobs.map((job, i) => renderJobCard(job, jobs.indexOf(job), 'completed')).join('')}
                     </div>
                 `;
@@ -1969,17 +1824,15 @@
 
             jobsList.innerHTML = html;
 
-            // Attach click handlers for card (except completed)
             document.querySelectorAll('.job-card:not(.completed)').forEach(card => {
                 card.addEventListener('click', function(e) {
-                    if (e.target.closest('.map-btn')) return; // Don't trigger on map button
+                    if (e.target.closest('.map-btn')) return;
                     const index = parseInt(this.dataset.jobIndex);
                     const job = jobs[index];
                     if (job) startJob(job.id);
                 });
             });
 
-            // Attach map button handlers
             document.querySelectorAll('.map-btn[data-map-link]').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -1992,8 +1845,6 @@
         // ============================================
         // SERVICE FLOW
         // ============================================
-
-        // Save service progress to localStorage
         function saveServiceProgress() {
             if (!currentJob) return;
             const progress = {
@@ -2006,7 +1857,6 @@
             localStorage.setItem('potpot_service_progress', JSON.stringify(progress));
         }
 
-        // Load service progress from localStorage
         function loadServiceProgress() {
             const saved = localStorage.getItem('potpot_service_progress');
             if (!saved) return null;
@@ -2017,38 +1867,32 @@
             }
         }
 
-        // Clear service progress
         function clearServiceProgress() {
             localStorage.removeItem('potpot_service_progress');
         }
 
-        // Check and restore in-progress service
         function checkInProgressService() {
             const progress = loadServiceProgress();
             if (progress && progress.jobId) {
-                // Check if this job is still valid (not completed) - use string comparison for safety
                 const job = jobs.find(j => String(j.id) === String(progress.jobId) && j.status !== 'COMPLETED');
                 if (job) {
-                    if (confirm(`You have an unfinished service for ${progress.job.customerName}. Resume now? (${progress.job.customerName} की अधूरी सर्विस अभी जारी रखें?)`)) {
+                    if (confirm(`You have an unfinished service for ${progress.job.customerName}. Resume now?`)) {
                         currentJob = progress.job;
                         currentStepIndex = progress.stepIndex || 0;
-                        // Ensure reportData has all required fields
                         const savedData = progress.reportData || {};
                         reportData = {
                             totalPlants: savedData.totalPlants || currentJob.plantCount || '',
                             redZonePlants: savedData.redZonePlants || '',
                             beforePhotos: savedData.beforePhotos || [],
-                            afterPhotos: savedData.afterPhotos || []
+                            afterPhotos: savedData.afterPhotos || [],
+                            repottedPlants: savedData.repottedPlants || []
                         };
                         document.getElementById('dashboard').classList.add('hidden');
                         document.getElementById('serviceScreen').classList.remove('hidden');
                         renderStep();
                         return true;
                     }
-                    // If user clicks "No", DON'T clear progress - they can resume later by clicking on the job
-                    // Progress will be restored in startJob()
                 } else {
-                    // Job no longer valid (completed or not found), clear progress
                     clearServiceProgress();
                 }
             }
@@ -2059,28 +1903,26 @@
             currentJob = jobs.find(j => j.id === jobId);
             if (!currentJob) return;
 
-            // Check if there's saved progress for this job (use string comparison for safety)
             const savedProgress = loadServiceProgress();
             if (savedProgress && String(savedProgress.jobId) === String(jobId)) {
-                // Restore saved progress
                 currentStepIndex = savedProgress.stepIndex || 0;
                 const savedData = savedProgress.reportData || {};
                 reportData = {
                     totalPlants: savedData.totalPlants || currentJob.plantCount || '',
                     redZonePlants: savedData.redZonePlants || '',
                     beforePhotos: savedData.beforePhotos || [],
-                    afterPhotos: savedData.afterPhotos || []
+                    afterPhotos: savedData.afterPhotos || [],
+                    repottedPlants: savedData.repottedPlants || []
                 };
             } else {
-                // Fresh start
                 currentStepIndex = 0;
                 reportData = {
                     totalPlants: currentJob.plantCount || '',
                     redZonePlants: '',
                     beforePhotos: [],
-                    afterPhotos: []
+                    afterPhotos: [],
+                    repottedPlants: []
                 };
-                // Save initial progress
                 saveServiceProgress();
             }
 
@@ -2094,20 +1936,33 @@
             const progress = ((currentStepIndex + 1) / SERVICE_STEPS.length) * 100;
 
             document.getElementById('stepTitle').textContent = step.title;
+            document.getElementById('stepIndicator').textContent = `${currentStepIndex + 1}/${SERVICE_STEPS.length}`;
             document.getElementById('progressFill').style.width = `${progress}%`;
             document.getElementById('serviceContent').innerHTML = step.render();
 
             const nextBtn = document.getElementById('nextBtn');
             if (step.isLast) {
-                nextBtn.innerHTML = 'Complete Job (काम पूरा करें) <span>›</span>';
+                nextBtn.innerHTML = '✅ Complete Service';
             } else {
-                nextBtn.innerHTML = 'Next Step (अगला) <span>›</span>';
+                nextBtn.innerHTML = 'Next <span>→</span>';
             }
 
             window.scrollTo(0, 0);
         }
 
         function nextStep() {
+            // Validation for step 0 (before photos)
+            if (currentStepIndex === 0 && reportData.beforePhotos.length < 2) {
+                alert('Please add at least 2 before photos');
+                return;
+            }
+
+            // Validation for step 2 (after photos)
+            if (currentStepIndex === 2 && reportData.afterPhotos.length < 2) {
+                alert('Please add at least 2 after photos');
+                return;
+            }
+
             if (currentStepIndex === SERVICE_STEPS.length - 1) {
                 completeService();
             } else {
@@ -2126,13 +1981,13 @@
         }
 
         function exitService() {
-            const choice = confirm('Exit service? Progress will be saved. (बाहर जाएं? प्रोग्रेस सेव रहेगी)');
+            const choice = confirm('Exit service? Progress will be saved.');
             if (choice) {
                 saveServiceProgress();
                 document.getElementById('serviceScreen').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
                 currentJob = null;
-                renderJobs(); // Refresh to show ongoing visit
+                renderJobs();
             }
         }
 
@@ -2140,27 +1995,30 @@
         // COMPLETE SERVICE
         // ============================================
         async function completeService() {
-            // Validation - before photos required
             if (reportData.beforePhotos.length === 0) {
-                alert('Please add at least one Before Photo (कम से कम एक पहले की फोटो डालें)');
+                alert('Please add at least one Before Photo');
                 return;
             }
-            // Validation - after photos required
             if (reportData.afterPhotos.length === 0) {
-                alert('Please add at least one After Photo (कम से कम एक बाद की फोटो डालें)');
+                alert('Please add at least one After Photo');
                 return;
             }
-            // Validation - total plants required
             if (!reportData.totalPlants || reportData.totalPlants === '0') {
-                alert('Please enter Total Plants Serviced (कुल पौधों की संख्या डालें)');
+                alert('Please enter Total Plants Serviced');
                 return;
             }
 
             const btn = document.getElementById('nextBtn');
             btn.disabled = true;
-            btn.innerHTML = 'Saving... (सेव हो रहा...)';
+            btn.innerHTML = 'Saving...';
 
             try {
+                // Format repotted plants for storage
+                const repottedPlantsStr = reportData.repottedPlants
+                    .filter(p => p.name || p.photos.length > 0)
+                    .map(p => `${p.name || 'Unnamed'}: ${p.photos.join(', ')}`)
+                    .join(' | ');
+
                 const payload = {
                     action: 'saveServiceReport',
                     bookingID: currentJob.id,
@@ -2174,6 +2032,7 @@
                     redZonePlants: reportData.redZonePlants,
                     beforePhotos: reportData.beforePhotos.join(','),
                     afterPhotos: reportData.afterPhotos.join(','),
+                    repottedPlants: repottedPlantsStr,
                     completedAt: new Date().toISOString(),
                     amount: currentJob.amount || 0
                 };
@@ -2194,13 +2053,13 @@
                 } else {
                     alert('Failed to save: ' + (result.error || 'Unknown error'));
                     btn.disabled = false;
-                    btn.innerHTML = 'Complete Job (काम पूरा करें) <span>›</span>';
+                    btn.innerHTML = '✅ Complete Service';
                 }
             } catch (error) {
                 console.error('Error:', error);
                 alert('Failed to save. Please try again.');
                 btn.disabled = false;
-                btn.innerHTML = 'Complete Job (काम पूरा करें) <span>›</span>';
+                btn.innerHTML = '✅ Complete Service';
             }
         }
 
@@ -2211,31 +2070,35 @@
             document.getElementById('serviceScreen').classList.add('hidden');
             document.getElementById('completeScreen').classList.remove('hidden');
 
+            const repottedCount = reportData.repottedPlants.filter(p => p.name || p.photos.length > 0).length;
+
             document.getElementById('completeSummary').innerHTML = `
                 <div class="row">
-                    <span class="label">Customer (कस्टमर)</span>
+                    <span class="label">Customer</span>
                     <span class="value">${currentJob.customerName}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Address (पता)</span>
+                    <span class="label">Address</span>
                     <span class="value">${currentJob.address || '-'}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Plants Serviced (सर्विस किए पौधे)</span>
+                    <span class="label">Plants Serviced</span>
                     <span class="value">${reportData.totalPlants || '-'}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Red Zone Plants (बीमार पौधे)</span>
-                    <span class="value">${reportData.redZonePlants ? 'Yes (हां)' : 'None (नहीं)'}</span>
+                    <span class="label">Plants Repotted</span>
+                    <span class="value">${repottedCount}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Red Zone Plants</span>
+                    <span class="value">${reportData.redZonePlants ? 'Yes' : 'None'}</span>
                 </div>
             `;
 
-            // Initialize payment section
             initPaymentSection();
         }
 
         async function initPaymentSection() {
-            // Fetch fresh job data to get latest amount from Column U
             try {
                 const response = await fetch(`${API_URL}?action=getGardenerJobs&phone=${currentUser.phone}`);
                 const data = await response.json();
@@ -2252,7 +2115,6 @@
             const amount = currentJob.amount || currentJob.price || 0;
 
             if (!amount || amount <= 0) {
-                // No amount, hide payment section
                 document.getElementById('paymentSection').style.display = 'none';
                 return;
             }
@@ -2260,15 +2122,13 @@
             document.getElementById('paymentAmount').textContent = `₹${amount}`;
             document.getElementById('paymentSection').style.display = 'block';
 
-            // Reset payment status
             document.getElementById('paymentStatus').className = 'payment-status pending';
             document.getElementById('paymentStatus').innerHTML = `
                 <div class="spinner-small"></div>
-                <span>Creating payment link... <span class="hindi">(पेमेंट लिंक बना रहे...)</span></span>
+                <span>Creating payment link...</span>
             `;
 
             try {
-                // Create Razorpay payment link via Apps Script
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
@@ -2286,17 +2146,14 @@
                 if (result.success && result.paymentLink) {
                     paymentLinkId = result.paymentLinkId;
 
-                    // Generate QR code for payment link
                     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(result.paymentLink)}`;
                     document.getElementById('paymentQR').src = qrUrl;
 
-                    // Update status
                     document.getElementById('paymentStatus').innerHTML = `
                         <div class="spinner-small"></div>
-                        <span>Waiting for payment... <span class="hindi">(पेमेंट का इंतज़ार...)</span></span>
+                        <span>Waiting for payment...</span>
                     `;
 
-                    // Start polling for payment status
                     startPaymentStatusCheck();
                 } else {
                     throw new Error(result.error || 'Failed to create payment link');
@@ -2305,18 +2162,16 @@
                 console.error('Payment link error:', error);
                 document.getElementById('paymentStatus').className = 'payment-status pending';
                 document.getElementById('paymentStatus').innerHTML = `
-                    <span>⚠️ Could not create payment link. Use cash. <span class="hindi">(लिंक नहीं बना, कैश लें)</span></span>
+                    <span>⚠️ Could not create payment link. Use cash.</span>
                 `;
             }
         }
 
         function startPaymentStatusCheck() {
-            // Clear any existing interval
             if (paymentCheckInterval) {
                 clearInterval(paymentCheckInterval);
             }
 
-            // Check every 5 seconds
             paymentCheckInterval = setInterval(async () => {
                 if (!paymentLinkId) return;
 
@@ -2325,7 +2180,6 @@
                     const result = await response.json();
 
                     if (result.success && result.status === 'paid') {
-                        // Payment received!
                         clearInterval(paymentCheckInterval);
                         showPaymentSuccess();
                     }
@@ -2338,13 +2192,11 @@
         async function showPaymentSuccess() {
             document.getElementById('paymentStatus').className = 'payment-status paid';
             document.getElementById('paymentStatus').innerHTML = `
-                <span>✅ Payment Received! <span class="hindi">(पेमेंट मिल गया!)</span></span>
+                <span>✅ Payment Received!</span>
             `;
 
-            // Hide skip button
             document.querySelector('.skip-payment-btn').style.display = 'none';
 
-            // Update payment status in sheet
             try {
                 await fetch(API_URL, {
                     method: 'POST',
@@ -2360,7 +2212,6 @@
                 console.error('Failed to update payment status:', e);
             }
 
-            // Optional: Play a sound or vibrate
             if (navigator.vibrate) {
                 navigator.vibrate([200, 100, 200]);
             }
@@ -2374,7 +2225,6 @@
         }
 
         function backToDashboard() {
-            // Clear payment polling
             if (paymentCheckInterval) {
                 clearInterval(paymentCheckInterval);
                 paymentCheckInterval = null;
@@ -2402,7 +2252,6 @@
             const gardenerId = document.getElementById('gardenerFilter').value;
 
             filteredReports = allReports.filter(booking => {
-                // Filter by gardener only
                 if (gardenerId && booking.gardenerID !== gardenerId) return false;
                 return true;
             });
@@ -2426,17 +2275,17 @@
                 return `
                     <div class="report-card-admin">
                         <div class="report-card-header">
-                            <span class="report-gardener">👤 ${booking.gardenerName || 'Unassigned (कोई माली नहीं)'}</span>
+                            <span class="report-gardener">👤 ${booking.gardenerName || 'Unassigned'}</span>
                             <span class="report-date">${booking.timeSlot || '-'}</span>
                         </div>
                         <div class="report-customer">${booking.customerName || '-'}</div>
                         <div class="report-address">📍 ${booking.address || '-'}</div>
                         <div class="report-stats">
-                            <span class="report-stat">🌿 ${booking.plantCount || '-'} plants (पौधे)</span>
-                            <span class="report-stat ${booking.status === 'COMPLETED' ? '' : 'red'}">${booking.status === 'COMPLETED' ? '✅ Done (पूरा)' : '⏳ Pending (बाकी)'}</span>
+                            <span class="report-stat">🌿 ${booking.plantCount || '-'} plants</span>
+                            <span class="report-stat ${booking.status === 'COMPLETED' ? '' : 'red'}">${booking.status === 'COMPLETED' ? '✅ Done' : '⏳ Pending'}</span>
                         </div>
                         ${booking.mapLink ? `
-                            <a href="javascript:void(0)" onclick="openMapLocation('${booking.mapLink}')" style="display: inline-block; margin-top: 10px; color: #1565c0; font-size: 13px;">📍 Open Map (नक्शा खोलें)</a>
+                            <a href="javascript:void(0)" onclick="openMapLocation('${booking.mapLink}')" style="display: inline-block; margin-top: 10px; color: #1565c0; font-size: 13px;">📍 Open Map</a>
                         ` : ''}
                     </div>
                 `;
@@ -2451,16 +2300,12 @@
         }
 
         function openMapLocation(mapLink) {
-            // Extract lat,lng from Google Maps URL
-            // Format: https://www.google.com/maps?q=12.9716,77.5946
             const match = mapLink.match(/q=([-\d.]+),([-\d.]+)/);
             if (match) {
                 const lat = match[1];
                 const lng = match[2];
-                // Use geo: URI to trigger native app chooser
                 window.location.href = `geo:${lat},${lng}?q=${lat},${lng}`;
             } else {
-                // Fallback to direct link
                 window.open(mapLink, '_blank');
             }
         }
@@ -2477,21 +2322,16 @@
         async function restoreSession() {
             const session = getSession();
 
-            // No session? Return immediately - no API calls needed
             if (!session || !session.phone) {
                 return false;
             }
 
             currentUser = session;
 
-            // Show the appropriate dashboard immediately with cached data
-            // Then refresh data in background
             if (session.isAdmin) {
-                // Show admin dashboard immediately
                 document.getElementById('adminDashboard').classList.remove('hidden');
                 document.getElementById('adminWelcome').textContent = `Welcome, ${session.name || 'Admin'}`;
 
-                // Fetch fresh data
                 try {
                     const response = await fetch(`${API_URL}?action=getAdminReports&phone=${session.phone}`);
                     const data = await response.json();
@@ -2504,7 +2344,6 @@
                         filteredReports = [...allReports];
                         renderBookings();
                     } else {
-                        // Session no longer valid
                         clearSession();
                         document.getElementById('adminDashboard').classList.add('hidden');
                         return false;
@@ -2515,11 +2354,9 @@
                 }
                 return true;
             } else {
-                // Show gardener dashboard immediately
                 document.getElementById('dashboard').classList.remove('hidden');
                 document.getElementById('welcomeText').textContent = `Welcome, ${session.name || 'Gardener'}`;
 
-                // Fetch fresh data
                 try {
                     const response = await fetch(`${API_URL}?action=getGardenerJobs&phone=${session.phone}`);
                     const data = await response.json();
@@ -2535,10 +2372,8 @@
                         document.getElementById('welcomeText').textContent = `Welcome, ${data.gardener.name}`;
                         jobs = data.jobs || [];
                         renderJobs();
-                        // Check for in-progress service
                         checkInProgressService();
                     } else {
-                        // Session no longer valid
                         clearSession();
                         document.getElementById('dashboard').classList.add('hidden');
                         return false;
@@ -2555,10 +2390,8 @@
         // INIT
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
-            // Try to restore previous session
             const restored = await restoreSession();
 
-            // Hide splash screen
             document.getElementById('splashScreen').classList.add('hidden');
 
             if (!restored) {
