@@ -1317,17 +1317,17 @@
         // ============================================
         const SERVICE_STEPS = [
             {
-                id: 'start_service',
-                title: 'Start Service',
+                id: 'before_photos',
+                title: 'Before Photos (पहले की फोटो)',
                 render: () => `
                     <div class="action-card">
                         <div class="action-card-header">
-                            <h2>📸 Before Photos</h2>
-                            <p>Take photos of all plants before starting</p>
+                            <h2>📸 Before Photos (पहले की फोटो)</h2>
+                            <p>Take photos of all plants before starting (सर्विस से पहले सभी पौधों की फोटो लें)</p>
                         </div>
                         <div class="action-card-body">
                             <div class="action-hint">
-                                💡 Take wide shots covering all plant areas. Include any problem areas.
+                                💡 सभी पौधों की वाइड फोटो लें। किसी भी समस्या वाली जगह को भी शामिल करें।
                             </div>
                             <div class="photo-section">
                                 <div class="photo-section-label">
@@ -1343,22 +1343,22 @@
             },
             {
                 id: 'repotting',
-                title: 'Repotting',
+                title: 'Repotting (रीपॉटिंग)',
                 render: () => `
                     <div class="action-card">
                         <div class="action-card-header">
-                            <h2>🪴 Repotting</h2>
-                            <p>Add plants that need repotting</p>
+                            <h2>🪴 Repotting (रीपॉटिंग)</h2>
+                            <p>Add plants that need repotting (रीपॉटिंग वाले पौधे जोड़ें)</p>
                         </div>
                         <div class="action-card-body">
                             <div class="action-hint">
-                                💡 Click "Add Plant" for each plant you repot. Take a photo after repotting each one.
+                                💡 "Add Plant" पर क्लिक करें हर पौधे के लिए जिसे रीपॉट करना है। रीपॉट करने के बाद फोटो लें।
                             </div>
                             <div class="plant-selection">
                                 <div class="plant-selection-header">
-                                    <span class="plant-selection-label">Repotted Plants</span>
+                                    <span class="plant-selection-label">Repotted Plants (रीपॉट किए पौधे)</span>
                                     <button class="add-plant-btn" onclick="addRepottedPlant()">
-                                        + Add Plant
+                                        + Add Plant (पौधा जोड़ें)
                                     </button>
                                 </div>
                                 <div id="repottedPlantsList">
@@ -1371,16 +1371,16 @@
             },
             {
                 id: 'after_photos',
-                title: 'After Photos',
+                title: 'After Photos (बाद की फोटो)',
                 render: () => `
                     <div class="action-card">
                         <div class="action-card-header">
-                            <h2>📸 After Photos</h2>
-                            <p>Take photos after completing all work</p>
+                            <h2>📸 After Photos (बाद की फोटो)</h2>
+                            <p>Take photos after completing all work (सारा काम पूरा करने के बाद फोटो लें)</p>
                         </div>
                         <div class="action-card-body">
                             <div class="action-hint">
-                                💡 Show the clean plants, pots, and floor from the same angles as before photos.
+                                💡 साफ पौधे, गमले और फर्श दिखाएं - वही एंगल जो पहले थे।
                             </div>
                             <div class="photo-section">
                                 <div class="photo-section-label">
@@ -1396,26 +1396,26 @@
             },
             {
                 id: 'complete',
-                title: 'Complete Service',
+                title: 'Complete (पूरा करें)',
                 isLast: true,
                 render: () => `
                     <div class="action-card">
                         <div class="action-card-header">
-                            <h2>✅ Complete Service</h2>
-                            <p>Final details before finishing</p>
+                            <h2>✅ Complete Service (सर्विस पूरी करें)</h2>
+                            <p>Final details before finishing (खत्म करने से पहले अंतिम जानकारी)</p>
                         </div>
                         <div class="action-card-body">
                             <div class="report-field">
-                                <label>Total Plants Serviced</label>
+                                <label>Total Plants Serviced (कुल पौधों की सर्विस)</label>
                                 <input type="number" class="report-input" id="totalPlantsInput"
-                                       placeholder="e.g. 25" value="${reportData.totalPlants}"
+                                       placeholder="जैसे 25" value="${reportData.totalPlants}"
                                        onchange="reportData.totalPlants = this.value">
                             </div>
 
                             <div class="report-field">
-                                <label class="red">Red Zone / Sick Plants (optional)</label>
+                                <label class="red">Red Zone / Sick Plants (बीमार पौधे) - optional</label>
                                 <textarea class="red-zone-textarea" id="redZonePlantsInput"
-                                          placeholder="List any sick or infected plants...&#10;e.g. Rose - Fungus, Money Plant - Yellow leaves"
+                                          placeholder="बीमार पौधों की लिस्ट...&#10;जैसे: गुलाब - फंगस, मनी प्लांट - पीली पत्तियां"
                                           onchange="reportData.redZonePlants = this.value">${reportData.redZonePlants}</textarea>
                             </div>
                         </div>
@@ -1457,8 +1457,8 @@
             if (plants.length === 0) {
                 return `
                     <div class="no-repotting-msg">
-                        No plants repotted yet.<br>
-                        <small>Click "Add Plant" if you repot any plant.</small>
+                        No plants repotted yet. (अभी कोई पौधा रीपॉट नहीं हुआ)<br>
+                        <small>Click "Add Plant" if you repot any plant. (अगर कोई पौधा रीपॉट करें तो "Add Plant" पर क्लिक करें)</small>
                     </div>
                 `;
             }
@@ -1466,15 +1466,15 @@
             return plants.map((plant, i) => `
                 <div class="plant-item">
                     <div class="plant-item-header">
-                        <span class="plant-item-name">🪴 Plant ${i + 1}</span>
-                        <button class="plant-item-remove" onclick="removeRepottedPlant(${i})">Remove</button>
+                        <span class="plant-item-name">🪴 Plant ${i + 1} (पौधा ${i + 1})</span>
+                        <button class="plant-item-remove" onclick="removeRepottedPlant(${i})">Remove (हटाएं)</button>
                     </div>
                     <input type="text" class="plant-name-input"
-                           placeholder="Plant name (e.g. Money Plant)"
+                           placeholder="पौधे का नाम (जैसे Money Plant)"
                            value="${plant.name || ''}"
                            onchange="updatePlantName(${i}, this.value)">
                     <div class="photo-section">
-                        <div class="photo-section-label">📷 Photo after repotting</div>
+                        <div class="photo-section-label">📷 Photo after repotting (रीपॉट के बाद फोटो)</div>
                         <div class="photo-grid" id="repottedPlantPhotos_${i}">
                             ${renderRepottedPlantPhotos(i)}
                         </div>
