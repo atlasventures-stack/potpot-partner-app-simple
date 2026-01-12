@@ -1574,7 +1574,7 @@
         }
 
         // Upload single repotted plant photo - runs in background
-        function addRepottedPlantPhoto(plantIndex, input) {
+        async function addRepottedPlantPhoto(plantIndex, input) {
             if (!input.files || !input.files[0]) return;
 
             const file = input.files[0];
@@ -1594,13 +1594,16 @@
             `;
             grid.insertBefore(uploadingDiv, grid.lastElementChild);
 
+            // Compress image first
+            const compressedFile = await compressImage(file);
+
             // Upload in background
             const timestamp = Date.now();
             const jobId = currentJob?.id || 'unknown';
-            const filename = `${jobId}/repotting/${plantIndex}/${timestamp}_${file.name}`;
+            const filename = `${jobId}/repotting/${plantIndex}/${timestamp}.jpg`;
 
             const storageRef = storage.ref().child(filename);
-            const uploadTask = storageRef.put(file);
+            const uploadTask = storageRef.put(compressedFile);
 
             uploadTask.on('state_changed',
                 (snapshot) => {
@@ -1677,14 +1680,53 @@
             input.value = '';
         }
 
+        // Compress image before upload (reduces 5-10MB to ~200KB)
+        function compressImage(file, maxSize = 1200, quality = 0.7) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Resize if larger than maxSize
+                        if (width > height && width > maxSize) {
+                            height = (height * maxSize) / width;
+                            width = maxSize;
+                        } else if (height > maxSize) {
+                            width = (width * maxSize) / height;
+                            height = maxSize;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            resolve(blob);
+                        }, 'image/jpeg', quality);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         // Background upload helper
-        function uploadPhotoInBackground(file, type, uploadingDiv, onSuccess) {
+        async function uploadPhotoInBackground(file, type, uploadingDiv, onSuccess) {
+            // Compress image first
+            const compressedFile = await compressImage(file);
+
             const timestamp = Date.now();
             const jobId = currentJob?.id || 'unknown';
-            const filename = `${jobId}/${type}/${timestamp}_${file.name}`;
+            const filename = `${jobId}/${type}/${timestamp}.jpg`;
 
             const storageRef = storage.ref().child(filename);
-            const uploadTask = storageRef.put(file);
+            const uploadTask = storageRef.put(compressedFile);
 
             uploadTask.on('state_changed',
                 (snapshot) => {
