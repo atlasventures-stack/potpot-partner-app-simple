@@ -1,6 +1,6 @@
 # PotPot Backend & Partner App Context for Claude
 
-**Last Updated:** 2026-01-11
+**Last Updated:** 2026-01-13
 
 ## ONLY THESE 3 LIVE WEBSITES EXIST
 1. https://www.potpot.online - Main website
@@ -75,6 +75,32 @@ const SLOT_CONFIG = {
 - `pre_service_com_time` - Day-before reminder
 - `post_service_checkup` - 5-day follow-up
 - `nps_form` - Sent after service completion
+
+## Recent Changes (2026-01-13)
+
+### Partner App: Bugs Found Toggle
+- Added "🐛 Bugs found in plants (पौधों में कीड़े मिले)" toggle checkbox in Complete Service step
+- Partner can mark if bugs/pests were found during service
+- `bugsFound` field sent to backend as "Yes" or "No"
+- Shows in completion summary screen
+
+### Partner App: Dynamic Payment Calculation
+- **New payment logic based on Amount column in Bookings sheet:**
+  - `Amount = 0` → No payment section shown
+  - `Amount = blank/empty` → Calculate from partner's entered plant count
+  - `Amount = value` → Show that exact amount
+- **Pricing tiers (when calculating from plants):**
+  - 1-20 plants → ₹399
+  - 21-35 plants → ₹599
+  - 36-50 plants → ₹799
+  - 51-75 plants → ₹999
+  - 76-100 plants → ₹1199
+  - 101+ plants → ₹1499
+- Uses `reportData.totalPlants` (actual plants serviced, not booked)
+
+### Partner App: UI Fixes
+- Fixed bugs toggle layout (checkbox and text now side-by-side)
+- Added `flex-direction: row` and `flex-shrink: 0` for proper alignment
 
 ## Recent Changes (2026-01-11)
 
