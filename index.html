@@ -591,6 +591,53 @@
             font-size: 16px;
         }
 
+        /* Upload Progress Styles */
+        .photo-item.uploading {
+            background: #f5f5f5;
+            border: 2px solid #4caf50;
+        }
+
+        .upload-progress-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 8px;
+        }
+
+        .upload-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #4caf50;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 8px;
+        }
+
+        .upload-progress-bar {
+            width: 80%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .upload-progress-fill {
+            height: 100%;
+            background: #4caf50;
+            border-radius: 2px;
+            transition: width 0.2s;
+        }
+
+        .upload-progress-text {
+            font-size: 11px;
+            color: #666;
+            font-weight: 600;
+        }
+
         .photo-add {
             width: 100px;
             height: 100px;
@@ -1531,10 +1578,18 @@
                 const file = input.files[0];
                 const grid = document.getElementById(`repottedPlantPhotos_${plantIndex}`);
 
-                // Show uploading state
+                // Show uploading state with progress
                 const uploadingDiv = document.createElement('div');
                 uploadingDiv.className = 'photo-item uploading';
-                uploadingDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:12px;">Uploading...</div>';
+                uploadingDiv.innerHTML = `
+                    <div class="upload-progress-container">
+                        <div class="upload-spinner"></div>
+                        <div class="upload-progress-bar">
+                            <div class="upload-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="upload-progress-text">0%</div>
+                    </div>
+                `;
                 grid.insertBefore(uploadingDiv, grid.lastElementChild);
 
                 try {
@@ -1543,15 +1598,32 @@
                     const filename = `${jobId}/repotting/${plantIndex}/${timestamp}_${file.name}`;
 
                     const storageRef = storage.ref().child(filename);
-                    const snapshot = await storageRef.put(file);
-                    const downloadURL = await snapshot.ref.getDownloadURL();
+                    const uploadTask = storageRef.put(file);
 
-                    reportData.repottedPlants[plantIndex].photos.push(downloadURL);
-                    saveServiceProgress();
-                    renderStep();
+                    // Track upload progress
+                    uploadTask.on('state_changed',
+                        (snapshot) => {
+                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                            const progressFill = uploadingDiv.querySelector('.upload-progress-fill');
+                            const progressText = uploadingDiv.querySelector('.upload-progress-text');
+                            if (progressFill) progressFill.style.width = progress + '%';
+                            if (progressText) progressText.textContent = progress + '%';
+                        },
+                        (error) => {
+                            console.error('Upload error:', error);
+                            alert('Upload failed. Please try again. (अपलोड फेल हुआ, फिर से कोशिश करें)');
+                            uploadingDiv.remove();
+                        },
+                        async () => {
+                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                            reportData.repottedPlants[plantIndex].photos.push(downloadURL);
+                            saveServiceProgress();
+                            renderStep();
+                        }
+                    );
                 } catch (error) {
                     console.error('Upload error:', error);
-                    alert('Failed to upload photo. Please try again.');
+                    alert('Upload failed. Please try again. (अपलोड फेल हुआ, फिर से कोशिश करें)');
                     uploadingDiv.remove();
                 }
             }
@@ -1571,7 +1643,15 @@
 
                 const uploadingDiv = document.createElement('div');
                 uploadingDiv.className = 'photo-item uploading';
-                uploadingDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:12px;">Uploading...</div>';
+                uploadingDiv.innerHTML = `
+                    <div class="upload-progress-container">
+                        <div class="upload-spinner"></div>
+                        <div class="upload-progress-bar">
+                            <div class="upload-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="upload-progress-text">0%</div>
+                    </div>
+                `;
                 grid.insertBefore(uploadingDiv, grid.lastElementChild);
 
                 try {
@@ -1580,15 +1660,32 @@
                     const filename = `${jobId}/${type}/${timestamp}_${file.name}`;
 
                     const storageRef = storage.ref().child(filename);
-                    const snapshot = await storageRef.put(file);
-                    const downloadURL = await snapshot.ref.getDownloadURL();
+                    const uploadTask = storageRef.put(file);
 
-                    reportData[type].push(downloadURL);
-                    saveServiceProgress();
-                    renderStep();
+                    // Track upload progress
+                    uploadTask.on('state_changed',
+                        (snapshot) => {
+                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                            const progressFill = uploadingDiv.querySelector('.upload-progress-fill');
+                            const progressText = uploadingDiv.querySelector('.upload-progress-text');
+                            if (progressFill) progressFill.style.width = progress + '%';
+                            if (progressText) progressText.textContent = progress + '%';
+                        },
+                        (error) => {
+                            console.error('Upload error:', error);
+                            alert('Upload failed. Please try again. (अपलोड फेल हुआ, फिर से कोशिश करें)');
+                            uploadingDiv.remove();
+                        },
+                        async () => {
+                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                            reportData[type].push(downloadURL);
+                            saveServiceProgress();
+                            renderStep();
+                        }
+                    );
                 } catch (error) {
                     console.error('Upload error:', error);
-                    alert('Failed to upload photo. Please try again.');
+                    alert('Upload failed. Please try again. (अपलोड फेल हुआ, फिर से कोशिश करें)');
                     uploadingDiv.remove();
                 }
             }
