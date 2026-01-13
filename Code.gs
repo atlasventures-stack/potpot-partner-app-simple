@@ -1273,7 +1273,9 @@
         'CompletedAt',
         'PaymentStatus',
         'PaymentLinkId',
-        'Amount'
+        'Amount',
+        'BugsFound',
+        'RepottedPlants'
       ]);
     }
 
@@ -1296,7 +1298,9 @@
       new Date(),
       'Pending',
       '',
-      data.amount || 0
+      data.amount || 0,
+      data.bugsFound || 'No',
+      data.repottedPlants || ''
     ]);
 
     // Schedule NPS form to send in background (gardener doesn't wait)
