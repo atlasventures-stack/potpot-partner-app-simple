@@ -15,7 +15,7 @@
 
 ## Current Backend API
 ```
-https://script.google.com/macros/s/AKfycbxN7TLkqiDCLzhj_RKNwLL_mXeqjq4AYSmEOsJ4aTjU0WhPw3EfHRNZnmOF2qW6hiaQvw/exec
+https://script.google.com/macros/s/AKfycbxVIGgzKaltYhxFoWWkJJSEln6bYQa7QHNAtGzyvgbdYmuzDuN1zzC7IlN2RpQ4WNnR2w/exec
 ```
 
 ## How to Deploy Backend (Code.gs)
