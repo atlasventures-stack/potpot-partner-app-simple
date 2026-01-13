@@ -7,8 +7,53 @@
     AVAILABILITY: 'Availability',
     BOOKINGS: 'Bookings',
     SERVICE_REPORTS: 'ServiceReports',
-    ADMINS: 'Admins'
+    ADMINS: 'Admins',
+    LOGS: 'Logs'
   };
+
+  // ============================================
+  // LOGGING SYSTEM - Writes to Logs sheet
+  // ============================================
+
+  function logToSheet(level, action, message, details) {
+    try {
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      let logsSheet = ss.getSheetByName(TABS.LOGS);
+
+      // Create Logs sheet if it doesn't exist
+      if (!logsSheet) {
+        logsSheet = ss.insertSheet(TABS.LOGS);
+        logsSheet.appendRow(['Timestamp', 'Level', 'Action', 'Message', 'Details']);
+        logsSheet.setFrozenRows(1);
+        // Format header
+        logsSheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#4a4a4a').setFontColor('#ffffff');
+      }
+
+      const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+      const detailsStr = details ? JSON.stringify(details) : '';
+
+      logsSheet.appendRow([timestamp, level, action, message, detailsStr]);
+
+      // Also log to Apps Script logger
+      Logger.log(`[${level}] ${action}: ${message} ${detailsStr}`);
+    } catch (e) {
+      // If logging fails, at least log to Apps Script
+      Logger.log('LOGGING FAILED: ' + e.toString());
+      Logger.log(`[${level}] ${action}: ${message}`);
+    }
+  }
+
+  function logInfo(action, message, details) {
+    logToSheet('INFO', action, message, details);
+  }
+
+  function logError(action, message, details) {
+    logToSheet('ERROR', action, message, details);
+  }
+
+  function logWarning(action, message, details) {
+    logToSheet('WARNING', action, message, details);
+  }
 
   // ============================================
   // WATI.IO CONFIGURATION
@@ -677,9 +722,16 @@
         return jsonResponse(result);
       }
 
+      // This is a booking request
       const result = createBooking(data);
       return jsonResponse({ success: true, booking: result });
     } catch (error) {
+      // LOG: API error
+      logError('API_POST_ERROR', 'doPost threw error', {
+        error: error.toString(),
+        stack: error.stack || 'no stack',
+        postData: e.postData ? e.postData.contents.substring(0, 500) : 'no postData'
+      });
       return jsonResponse({ error: error.toString() });
     }
   }
@@ -1445,9 +1497,23 @@
   function createBooking(data) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
+    // LOG: Booking attempt started
+    logInfo('BOOKING_START', 'New booking attempt', {
+      customer: data.customerName,
+      phone: data.phone,
+      date: data.date,
+      timeSlot: data.timeSlot,
+      pincode: data.pincode,
+      gardenerID: data.gardenerID,
+      plantCount: data.plantCount
+    });
+
     const required = ['pincode', 'gardenerID', 'date', 'timeSlot'];
     for (const field of required) {
-      if (!data[field]) throw new Error('Missing: ' + field);
+      if (!data[field]) {
+        logError('BOOKING_VALIDATION', 'Missing required field: ' + field, data);
+        throw new Error('Missing: ' + field);
+      }
     }
 
     const [year, month, day] = data.date.split('-');
@@ -1456,6 +1522,13 @@
     // === CRITICAL: Re-validate slot availability before booking ===
     const bookingsSheet = ss.getSheetByName(TABS.BOOKINGS);
     const bookingsData = bookingsSheet.getDataRange().getValues();
+
+    logInfo('BOOKING_SLOT_CHECK', 'Checking slot availability', {
+      date: formattedDate,
+      timeSlot: data.timeSlot,
+      gardenerID: data.gardenerID,
+      existingBookingsCount: bookingsData.length - 1
+    });
 
     const requestedSlotMins = timeToMinutes(data.timeSlot);
     const requestedDuration = getServiceDuration(data.plantCount);
@@ -1493,10 +1566,21 @@
 
       // Check overlap
       if (requestedSlotMins < existingEndMins && requestedEndMins > existingStartMins) {
+        logWarning('BOOKING_SLOT_TAKEN', 'Slot already taken', {
+          requestedSlot: data.timeSlot,
+          existingBookingID: bookingsData[i][0],
+          existingSlot: existingTimeSlot,
+          customer: data.customerName
+        });
         throw new Error('SLOT_TAKEN: This time slot is no longer available. Please select another slot.');
       }
     }
     // === END: Slot validation ===
+
+    logInfo('BOOKING_SLOT_OK', 'Slot available, proceeding with save', {
+      date: formattedDate,
+      timeSlot: data.timeSlot
+    });
 
     const bookingID = 'PP' + Date.now().toString(36).toUpperCase();
 
@@ -1517,40 +1601,116 @@
       new Date()
     ];
 
+    // LOG: About to save
+    logInfo('BOOKING_SAVE_START', 'Attempting to save booking', {
+      bookingID: bookingID,
+      rowLength: bookingRow.length
+    });
+
     // Save to sheet
-    bookingsSheet.appendRow(bookingRow);
+    try {
+      bookingsSheet.appendRow(bookingRow);
+      logInfo('BOOKING_APPEND_OK', 'appendRow completed', { bookingID: bookingID });
+    } catch (appendError) {
+      logError('BOOKING_APPEND_FAIL', 'appendRow threw error', {
+        bookingID: bookingID,
+        error: appendError.toString()
+      });
+      throw appendError;
+    }
 
     // CRITICAL: Force write to complete
-    SpreadsheetApp.flush();
+    try {
+      SpreadsheetApp.flush();
+      logInfo('BOOKING_FLUSH_OK', 'flush() completed', { bookingID: bookingID });
+    } catch (flushError) {
+      logError('BOOKING_FLUSH_FAIL', 'flush() threw error', {
+        bookingID: bookingID,
+        error: flushError.toString()
+      });
+    }
 
     // Small delay to ensure persistence
-    Utilities.sleep(300);
+    Utilities.sleep(500); // Increased from 300ms to 500ms
 
     // VERIFY the row was actually written
+    logInfo('BOOKING_VERIFY_START', 'Starting verification', { bookingID: bookingID });
+
     const verifyData = bookingsSheet.getDataRange().getValues();
+    const totalRows = verifyData.length;
     let bookingFound = false;
+    let foundAtRow = -1;
+
     for (let i = verifyData.length - 1; i >= Math.max(1, verifyData.length - 10); i--) {
       if (verifyData[i][0] === bookingID) {
         bookingFound = true;
+        foundAtRow = i + 1;
         break;
       }
     }
 
+    logInfo('BOOKING_VERIFY_RESULT', 'First verification result', {
+      bookingID: bookingID,
+      found: bookingFound,
+      foundAtRow: foundAtRow,
+      totalRows: totalRows,
+      lastRowsChecked: Math.min(10, totalRows - 1)
+    });
+
     // If not found, retry once
     if (!bookingFound) {
-      Logger.log('WARNING: Booking ' + bookingID + ' not found after first save, retrying...');
-      bookingsSheet.appendRow(bookingRow);
+      logWarning('BOOKING_RETRY', 'Booking not found, attempting retry', { bookingID: bookingID });
+
+      try {
+        bookingsSheet.appendRow(bookingRow);
+        logInfo('BOOKING_RETRY_APPEND', 'Retry appendRow completed', { bookingID: bookingID });
+      } catch (retryAppendError) {
+        logError('BOOKING_RETRY_APPEND_FAIL', 'Retry appendRow failed', {
+          bookingID: bookingID,
+          error: retryAppendError.toString()
+        });
+      }
+
       SpreadsheetApp.flush();
-      Utilities.sleep(300);
+      Utilities.sleep(500);
 
       // Check again
       const retryData = bookingsSheet.getDataRange().getValues();
       for (let i = retryData.length - 1; i >= Math.max(1, retryData.length - 10); i--) {
         if (retryData[i][0] === bookingID) {
           bookingFound = true;
+          foundAtRow = i + 1;
           break;
         }
       }
+
+      logInfo('BOOKING_RETRY_RESULT', 'Retry verification result', {
+        bookingID: bookingID,
+        found: bookingFound,
+        foundAtRow: foundAtRow,
+        totalRowsAfterRetry: retryData.length
+      });
+    }
+
+    // FINAL LOG: Success or failure
+    if (bookingFound) {
+      logInfo('BOOKING_SUCCESS', 'Booking saved and verified', {
+        bookingID: bookingID,
+        customer: data.customerName,
+        phone: data.phone,
+        date: formattedDate,
+        timeSlot: data.timeSlot,
+        row: foundAtRow
+      });
+    } else {
+      logError('BOOKING_FAILED', 'CRITICAL: Booking could not be verified after retry', {
+        bookingID: bookingID,
+        customer: data.customerName,
+        phone: data.phone,
+        date: formattedDate,
+        timeSlot: data.timeSlot,
+        address: data.address || data.fullAddress
+      });
     }
 
     // EMAIL BACKUP - always send for every booking
@@ -1567,14 +1727,15 @@
               '\nAddress: ' + (data.address || data.fullAddress || 'N/A') +
               '\nGardener: ' + (data.gardenerName || 'N/A') + ' (' + data.gardenerID + ')' +
               '\nMap: ' + (data.mapLink || 'N/A') +
-              '\n\n' + (bookingFound ? '✅ Verified in sheet: YES' : '❌ VERIFIED IN SHEET: NO - CHECK IMMEDIATELY!')
+              '\n\n' + (bookingFound ? '✅ Verified in sheet: YES (Row ' + foundAtRow + ')' : '❌ VERIFIED IN SHEET: NO - CHECK LOGS TAB!')
       });
+      logInfo('BOOKING_EMAIL_SENT', 'Backup email sent', { bookingID: bookingID, success: bookingFound });
     } catch (emailError) {
-      Logger.log('Email backup failed: ' + emailError.toString());
+      logError('BOOKING_EMAIL_FAIL', 'Failed to send backup email', {
+        bookingID: bookingID,
+        error: emailError.toString()
+      });
     }
-
-    // Log result
-    Logger.log('Booking ' + bookingID + ' - Verified: ' + bookingFound);
 
     const availSheet = ss.getSheetByName(TABS.AVAILABILITY);
 
@@ -1589,12 +1750,25 @@
       ]);
     }
 
+    // Send WhatsApp confirmation
     if (data.phone) {
-      sendBookingConfirmation(
-        data.phone,
-        data.dateFormatted || formattedDate,
-        data.timeSlot
-      );
+      try {
+        sendBookingConfirmation(
+          data.phone,
+          data.dateFormatted || formattedDate,
+          data.timeSlot
+        );
+        logInfo('BOOKING_WHATSAPP_SENT', 'WhatsApp confirmation sent', {
+          bookingID: bookingID,
+          phone: data.phone
+        });
+      } catch (whatsappError) {
+        logError('BOOKING_WHATSAPP_FAIL', 'WhatsApp confirmation failed', {
+          bookingID: bookingID,
+          phone: data.phone,
+          error: whatsappError.toString()
+        });
+      }
     }
 
     return {
