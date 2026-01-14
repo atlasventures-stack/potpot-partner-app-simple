@@ -8,7 +8,11 @@
     BOOKINGS: 'Bookings',
     SERVICE_REPORTS: 'ServiceReports',
     ADMINS: 'Admins',
-    LOGS: 'Logs'
+    LOGS: 'Logs',
+    // User Authentication & Dashboard
+    USERS: 'Users',
+    OTP_STORE: 'OTPStore',
+    USER_PLANTS: 'UserPlants'
   };
 
   // ============================================
@@ -631,6 +635,11 @@
           reportsSheet.getRange(i + 1, 15).setValue(data.status || 'Paid');
           reportsSheet.getRange(i + 1, 16).setValue(data.paymentLinkId || '');
 
+          // Update PaymentCompletedAt (Column X = 24)
+          if (data.paymentCompletedAt) {
+            reportsSheet.getRange(i + 1, 24).setValue(data.paymentCompletedAt);
+          }
+
           Logger.log('Payment status updated for booking: ' + data.bookingID);
           return { success: true, message: 'Payment status updated' };
         }
@@ -687,6 +696,47 @@
         return jsonResponse(result);
       }
 
+      // ============================================
+      // USER AUTHENTICATION & DASHBOARD ENDPOINTS
+      // ============================================
+
+      if (action === 'sendOTP') {
+        const phone = e.parameter.phone;
+        if (!phone) {
+          return jsonResponse({ success: false, error: 'Phone is required' });
+        }
+        const result = sendOTPToUser(phone);
+        return jsonResponse(result);
+      }
+
+      if (action === 'verifyOTP') {
+        const phone = e.parameter.phone;
+        const otp = e.parameter.otp;
+        if (!phone || !otp) {
+          return jsonResponse({ success: false, error: 'Phone and OTP are required' });
+        }
+        const result = verifyUserOTP(phone, otp);
+        return jsonResponse(result);
+      }
+
+      if (action === 'getCustomerBookings') {
+        const phone = e.parameter.phone;
+        if (!phone) {
+          return jsonResponse({ success: false, error: 'Phone is required' });
+        }
+        const result = getCustomerBookings(phone);
+        return jsonResponse(result);
+      }
+
+      if (action === 'getCustomerPlants') {
+        const phone = e.parameter.phone;
+        if (!phone) {
+          return jsonResponse({ success: false, error: 'Phone is required' });
+        }
+        const result = getCustomerPlants(phone);
+        return jsonResponse(result);
+      }
+
       const pincode = e.parameter.pincode;
       const lat = e.parameter.lat ? parseFloat(e.parameter.lat) : null;
       const lng = e.parameter.lng ? parseFloat(e.parameter.lng) : null;
@@ -719,6 +769,11 @@
 
       if (data.action === 'updatePaymentStatus') {
         const result = updatePaymentStatus(data);
+        return jsonResponse(result);
+      }
+
+      if (data.action === 'saveCustomerPlant') {
+        const result = saveCustomerPlant(data);
         return jsonResponse(result);
       }
 
@@ -1275,7 +1330,11 @@
         'PaymentLinkId',
         'Amount',
         'BugsFound',
-        'RepottedPlants'
+        'RepottedPlants',
+        'ServiceStartedAt',
+        'BeforePhotosAt',
+        'AfterPhotosAt',
+        'PaymentCompletedAt'
       ]);
     }
 
@@ -1300,7 +1359,11 @@
       '',
       data.amount || 0,
       data.bugsFound || 'No',
-      data.repottedPlants || ''
+      data.repottedPlants || '',
+      data.serviceStartedAt || '',
+      data.beforePhotosAt || '',
+      data.afterPhotosAt || '',
+      ''  // PaymentCompletedAt - filled when payment is done
     ]);
 
     // Schedule NPS form to send in background (gardener doesn't wait)
@@ -1778,6 +1841,362 @@
     return {
       bookingID: bookingID,
       message: 'Booking confirmed! Visit on ' + formattedDate + ' at ' + data.timeSlot
+    };
+  }
+
+  // ============================================
+  // USER AUTHENTICATION FUNCTIONS
+  // ============================================
+
+  // Send OTP to user via WATI WhatsApp
+  function sendOTPToUser(phone) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+
+    if (cleanPhone.length !== 10) {
+      return { success: false, error: 'Invalid phone number' };
+    }
+
+    // Generate 4-digit OTP
+    const otp = String(Math.floor(1000 + Math.random() * 9000));
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 5 * 60 * 1000); // 5 minutes
+
+    // Get or create OTPStore sheet
+    let otpSheet = ss.getSheetByName(TABS.OTP_STORE);
+    if (!otpSheet) {
+      otpSheet = ss.insertSheet(TABS.OTP_STORE);
+      otpSheet.appendRow(['Phone', 'OTP', 'CreatedAt', 'ExpiresAt', 'Used']);
+      otpSheet.setFrozenRows(1);
+    }
+
+    // Store OTP
+    otpSheet.appendRow([cleanPhone, otp, now, expiresAt, false]);
+
+    // Send OTP via WATI WhatsApp
+    try {
+      const url = `${WATI_API_ENDPOINT}/api/v1/sendTemplateMessage?whatsappNumber=91${cleanPhone}`;
+
+      const payload = {
+        "template_name": "otp_verification",
+        "broadcast_name": "otp_" + Date.now(),
+        "parameters": [
+          { "name": "1", "value": otp }
+        ]
+      };
+
+      const options = {
+        method: 'POST',
+        headers: {
+          'Authorization': WATI_ACCESS_TOKEN,
+          'Content-Type': 'application/json'
+        },
+        payload: JSON.stringify(payload),
+        muteHttpExceptions: true
+      };
+
+      const response = UrlFetchApp.fetch(url, options);
+      const result = JSON.parse(response.getContentText());
+
+      if (result.result === true) {
+        logInfo('OTP_SENT', 'OTP sent successfully', { phone: cleanPhone });
+        return { success: true, message: 'OTP sent to your WhatsApp' };
+      } else {
+        logError('OTP_SEND_FAIL', 'WATI API returned error', { phone: cleanPhone, result: result });
+        return { success: false, error: 'Failed to send OTP. Please try again.' };
+      }
+    } catch (error) {
+      logError('OTP_SEND_ERROR', 'Exception sending OTP', { phone: cleanPhone, error: error.toString() });
+      return { success: false, error: 'Failed to send OTP. Please try again.' };
+    }
+  }
+
+  // Verify OTP and create/update user
+  function verifyUserOTP(phone, enteredOTP) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+
+    const otpSheet = ss.getSheetByName(TABS.OTP_STORE);
+    if (!otpSheet) {
+      return { success: false, error: 'No OTP found. Please request a new one.' };
+    }
+
+    const otpData = otpSheet.getDataRange().getValues();
+    const now = new Date();
+
+    // Find the latest unused OTP for this phone
+    let validOTP = null;
+    let otpRowIndex = -1;
+
+    for (let i = otpData.length - 1; i >= 1; i--) {
+      const otpPhone = String(otpData[i][0]);
+      const otp = String(otpData[i][1]);
+      const expiresAt = otpData[i][3];
+      const used = otpData[i][4];
+
+      if (otpPhone === cleanPhone && !used) {
+        // Check if expired
+        const expiryDate = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+        if (now > expiryDate) {
+          continue; // Expired, skip
+        }
+
+        validOTP = otp;
+        otpRowIndex = i + 1;
+        break;
+      }
+    }
+
+    if (!validOTP) {
+      return { success: false, error: 'OTP expired or not found. Please request a new one.' };
+    }
+
+    if (validOTP !== String(enteredOTP)) {
+      return { success: false, error: 'Invalid OTP. Please try again.' };
+    }
+
+    // Mark OTP as used
+    otpSheet.getRange(otpRowIndex, 5).setValue(true);
+
+    // Create or update user in Users sheet
+    let usersSheet = ss.getSheetByName(TABS.USERS);
+    if (!usersSheet) {
+      usersSheet = ss.insertSheet(TABS.USERS);
+      usersSheet.appendRow(['Phone', 'Name', 'CreatedAt', 'LastLoginAt']);
+      usersSheet.setFrozenRows(1);
+    }
+
+    const usersData = usersSheet.getDataRange().getValues();
+    let userRowIndex = -1;
+    let userName = '';
+    let isNewUser = true;
+
+    for (let i = 1; i < usersData.length; i++) {
+      if (String(usersData[i][0]) === cleanPhone) {
+        userRowIndex = i + 1;
+        userName = usersData[i][1] || '';
+        isNewUser = false;
+        break;
+      }
+    }
+
+    if (isNewUser) {
+      // Try to get name from Bookings sheet
+      const bookingsSheet = ss.getSheetByName(TABS.BOOKINGS);
+      if (bookingsSheet) {
+        const bookingsData = bookingsSheet.getDataRange().getValues();
+        for (let i = bookingsData.length - 1; i >= 1; i--) {
+          const bookingPhone = String(bookingsData[i][2]).replace(/\D/g, '').slice(-10);
+          if (bookingPhone === cleanPhone) {
+            userName = bookingsData[i][1] || '';
+            break;
+          }
+        }
+      }
+
+      // Create new user
+      usersSheet.appendRow([cleanPhone, userName, now, now]);
+      logInfo('USER_CREATED', 'New user registered', { phone: cleanPhone, name: userName });
+    } else {
+      // Update last login
+      usersSheet.getRange(userRowIndex, 4).setValue(now);
+      logInfo('USER_LOGIN', 'User logged in', { phone: cleanPhone, name: userName });
+    }
+
+    return {
+      success: true,
+      user: {
+        phone: cleanPhone,
+        name: userName,
+        isNewUser: isNewUser
+      }
+    };
+  }
+
+  // ============================================
+  // USER DASHBOARD FUNCTIONS
+  // ============================================
+
+  // Get all bookings for a customer
+  function getCustomerBookings(phone) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+
+    const bookingsSheet = ss.getSheetByName(TABS.BOOKINGS);
+    if (!bookingsSheet) {
+      return { success: true, bookings: [], upcomingCount: 0, pastCount: 0 };
+    }
+
+    const bookingsData = bookingsSheet.getDataRange().getValues();
+    const reportsSheet = ss.getSheetByName(TABS.SERVICE_REPORTS);
+    const reportsData = reportsSheet ? reportsSheet.getDataRange().getValues() : [];
+
+    // Build set of completed booking IDs
+    const completedBookings = new Set();
+    for (let i = 1; i < reportsData.length; i++) {
+      completedBookings.add(reportsData[i][1]); // BookingID is at index 1
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const bookings = [];
+
+    for (let i = 1; i < bookingsData.length; i++) {
+      const bookingPhone = String(bookingsData[i][2]).replace(/\D/g, '').slice(-10);
+
+      if (bookingPhone !== cleanPhone) continue;
+
+      const bookingID = bookingsData[i][0];
+      const bookingDate = parseDate(bookingsData[i][6]);
+
+      if (!bookingDate) continue;
+
+      bookingDate.setHours(0, 0, 0, 0);
+
+      let status;
+      if (completedBookings.has(bookingID)) {
+        status = 'COMPLETED';
+      } else if (bookingDate >= today) {
+        status = 'UPCOMING';
+      } else {
+        status = 'PAST';
+      }
+
+      bookings.push({
+        id: bookingID,
+        customerName: bookingsData[i][1],
+        date: parseDateToFormatted(bookingsData[i][6]),
+        dateFormatted: Utilities.formatDate(bookingDate, Session.getScriptTimeZone(), 'EEE, dd MMM yyyy'),
+        timeSlot: formatTimeSlotForDisplay(bookingsData[i][7]),
+        plantCount: bookingsData[i][8],
+        address: bookingsData[i][9],
+        gardenerName: bookingsData[i][5],
+        status: status
+      });
+    }
+
+    // Sort: Upcoming first (by date asc), then Past (by date desc)
+    bookings.sort((a, b) => {
+      if (a.status === 'UPCOMING' && b.status !== 'UPCOMING') return -1;
+      if (a.status !== 'UPCOMING' && b.status === 'UPCOMING') return 1;
+
+      const dateA = parseDate(a.date);
+      const dateB = parseDate(b.date);
+
+      if (a.status === 'UPCOMING') {
+        return dateA - dateB; // Ascending for upcoming
+      } else {
+        return dateB - dateA; // Descending for past/completed
+      }
+    });
+
+    const upcomingCount = bookings.filter(b => b.status === 'UPCOMING').length;
+    const pastCount = bookings.filter(b => b.status !== 'UPCOMING').length;
+
+    return {
+      success: true,
+      bookings: bookings,
+      upcomingCount: upcomingCount,
+      pastCount: pastCount
+    };
+  }
+
+  // Get saved plant analyses for a customer
+  function getCustomerPlants(phone) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+
+    const plantsSheet = ss.getSheetByName(TABS.USER_PLANTS);
+    if (!plantsSheet) {
+      return { success: true, plants: [], schedules: [], recommendations: [] };
+    }
+
+    const plantsData = plantsSheet.getDataRange().getValues();
+
+    const schedules = [];
+    const recommendations = [];
+
+    for (let i = 1; i < plantsData.length; i++) {
+      const plantPhone = String(plantsData[i][1]).replace(/\D/g, '').slice(-10);
+
+      if (plantPhone !== cleanPhone) continue;
+
+      const entry = {
+        id: plantsData[i][0],
+        type: plantsData[i][2],
+        imageURLs: plantsData[i][3] ? String(plantsData[i][3]).split(',') : [],
+        data: plantsData[i][4] ? JSON.parse(plantsData[i][4]) : {},
+        plantCount: plantsData[i][5] || 0,
+        createdAt: plantsData[i][6]
+      };
+
+      if (entry.type === 'schedule') {
+        schedules.push(entry);
+      } else if (entry.type === 'recommend') {
+        recommendations.push(entry);
+      }
+    }
+
+    // Sort by createdAt descending (newest first)
+    schedules.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    recommendations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    return {
+      success: true,
+      schedules: schedules,
+      recommendations: recommendations,
+      totalCount: schedules.length + recommendations.length
+    };
+  }
+
+  // Save AI analysis result for a customer
+  function saveCustomerPlant(data) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const cleanPhone = String(data.phone || '').replace(/\D/g, '').slice(-10);
+
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      return { success: false, error: 'Valid phone number required' };
+    }
+
+    if (!data.type || !['recommend', 'schedule'].includes(data.type)) {
+      return { success: false, error: 'Type must be "recommend" or "schedule"' };
+    }
+
+    // Get or create UserPlants sheet
+    let plantsSheet = ss.getSheetByName(TABS.USER_PLANTS);
+    if (!plantsSheet) {
+      plantsSheet = ss.insertSheet(TABS.USER_PLANTS);
+      plantsSheet.appendRow(['ID', 'Phone', 'Type', 'ImageURLs', 'Data', 'PlantCount', 'CreatedAt']);
+      plantsSheet.setFrozenRows(1);
+    }
+
+    const id = 'PLT' + Date.now().toString(36).toUpperCase();
+    const imageURLs = Array.isArray(data.imageURLs) ? data.imageURLs.join(',') : (data.imageURLs || '');
+    const plantData = typeof data.data === 'string' ? data.data : JSON.stringify(data.data || {});
+    const plantCount = data.plantCount || 0;
+
+    plantsSheet.appendRow([
+      id,
+      cleanPhone,
+      data.type,
+      imageURLs,
+      plantData,
+      plantCount,
+      new Date()
+    ]);
+
+    logInfo('PLANT_SAVED', 'Customer plant analysis saved', {
+      id: id,
+      phone: cleanPhone,
+      type: data.type,
+      plantCount: plantCount
+    });
+
+    return {
+      success: true,
+      id: id,
+      message: 'Plant analysis saved to your account'
     };
   }
 

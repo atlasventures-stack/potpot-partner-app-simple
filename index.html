@@ -1406,7 +1406,11 @@
             beforePhotos: [],
             afterPhotos: [],
             repottedPlants: [], // [{name: 'Money Plant', photos: ['url1', 'url2']}]
-            bugsFound: false
+            bugsFound: false,
+            // Timestamps
+            serviceStartedAt: null,
+            beforePhotosAt: null,
+            afterPhotosAt: null
         };
         // Admin state
         let allReports = [];
@@ -1751,6 +1755,14 @@
 
             // Upload in background
             uploadPhotoInBackground(file, type, uploadingDiv, (downloadURL) => {
+                // Track first photo timestamp
+                if (type === 'beforePhotos' && reportData.beforePhotos.length === 0 && !reportData.beforePhotosAt) {
+                    reportData.beforePhotosAt = new Date().toISOString();
+                }
+                if (type === 'afterPhotos' && reportData.afterPhotos.length === 0 && !reportData.afterPhotosAt) {
+                    reportData.afterPhotosAt = new Date().toISOString();
+                }
+
                 reportData[type].push(downloadURL);
                 saveServiceProgress();
                 updatePhotoGridAfterUpload(type, uploadingDiv, downloadURL);
@@ -2163,9 +2175,14 @@
                     beforePhotos: savedData.beforePhotos || [],
                     afterPhotos: savedData.afterPhotos || [],
                     repottedPlants: savedData.repottedPlants || [],
-                    bugsFound: savedData.bugsFound || false
+                    bugsFound: savedData.bugsFound || false,
+                    // Restore timestamps
+                    serviceStartedAt: savedData.serviceStartedAt || null,
+                    beforePhotosAt: savedData.beforePhotosAt || null,
+                    afterPhotosAt: savedData.afterPhotosAt || null
                 };
             } else {
+                // Fresh start - record service start time
                 currentStepIndex = 0;
                 reportData = {
                     totalPlants: currentJob.plantCount || '',
@@ -2173,7 +2190,11 @@
                     beforePhotos: [],
                     afterPhotos: [],
                     repottedPlants: [],
-                    bugsFound: false
+                    bugsFound: false,
+                    // Set service start timestamp
+                    serviceStartedAt: new Date().toISOString(),
+                    beforePhotosAt: null,
+                    afterPhotosAt: null
                 };
                 saveServiceProgress();
             }
@@ -2287,7 +2308,11 @@
                     repottedPlants: repottedPlantsStr,
                     bugsFound: reportData.bugsFound ? 'Yes' : 'No',
                     completedAt: new Date().toISOString(),
-                    amount: currentJob.amount || 0
+                    amount: currentJob.amount || 0,
+                    // Timestamps
+                    serviceStartedAt: reportData.serviceStartedAt || '',
+                    beforePhotosAt: reportData.beforePhotosAt || '',
+                    afterPhotosAt: reportData.afterPhotosAt || ''
                 };
 
                 const response = await fetch(API_URL, {
@@ -2497,7 +2522,8 @@
                         action: 'updatePaymentStatus',
                         bookingID: currentJob.id,
                         status: 'Paid',
-                        paymentLinkId: paymentLinkId
+                        paymentLinkId: paymentLinkId,
+                        paymentCompletedAt: new Date().toISOString()
                     })
                 });
             } catch (e) {
