@@ -1780,32 +1780,8 @@
       });
     }
 
-    // EMAIL BACKUP - always send for every booking
-    try {
-      MailApp.sendEmail({
-        to: 'potpot@atlasventuresonline.com',
-        subject: bookingFound ? '✅ PotPot Booking: ' + bookingID : '❌ BOOKING FAILED: ' + bookingID,
-        body: 'Booking ID: ' + bookingID +
-              '\nCustomer: ' + (data.customerName || 'N/A') +
-              '\nPhone: ' + (data.phone || 'N/A') +
-              '\nDate: ' + formattedDate +
-              '\nTime: ' + data.timeSlot +
-              '\nPlants: ' + (data.plantCount || 'N/A') +
-              '\nAddress: ' + (data.address || data.fullAddress || 'N/A') +
-              '\nGardener: ' + (data.gardenerName || 'N/A') + ' (' + data.gardenerID + ')' +
-              '\nMap: ' + (data.mapLink || 'N/A') +
-              '\n\n' + (bookingFound ? '✅ Verified in sheet: YES (Row ' + foundAtRow + ')' : '❌ VERIFIED IN SHEET: NO - CHECK LOGS TAB!')
-      });
-      logInfo('BOOKING_EMAIL_SENT', 'Backup email sent', { bookingID: bookingID, success: bookingFound });
-    } catch (emailError) {
-      logError('BOOKING_EMAIL_FAIL', 'Failed to send backup email', {
-        bookingID: bookingID,
-        error: emailError.toString()
-      });
-    }
-
+    // Update availability (fast, same spreadsheet)
     const availSheet = ss.getSheetByName(TABS.AVAILABILITY);
-
     if (data.availabilityRowIndex) {
       availSheet.getRange(data.availabilityRowIndex, 4).setValue(true);
     } else {
@@ -1817,31 +1793,125 @@
       ]);
     }
 
-    // Send WhatsApp confirmation
+    // Schedule async notifications (email + WhatsApp) - don't block response
+    scheduleBookingNotifications({
+      bookingID: bookingID,
+      bookingFound: bookingFound,
+      foundAtRow: foundAtRow,
+      customerName: data.customerName,
+      phone: data.phone,
+      formattedDate: formattedDate,
+      timeSlot: data.timeSlot,
+      plantCount: data.plantCount,
+      address: data.address || data.fullAddress,
+      gardenerName: data.gardenerName,
+      gardenerID: data.gardenerID,
+      mapLink: data.mapLink
+    });
+
+    // Return immediately - notifications will be sent async
+    return {
+      bookingID: bookingID,
+      message: 'Booking confirmed! Visit on ' + formattedDate + ' at ' + data.timeSlot
+    };
+  }
+
+  // ============================================
+  // ASYNC BOOKING NOTIFICATIONS (Email + WhatsApp)
+  // ============================================
+
+  function scheduleBookingNotifications(notificationData) {
+    try {
+      // Store notification data in Properties for the trigger to access
+      const props = PropertiesService.getScriptProperties();
+      const key = 'BOOKING_NOTIFY_' + notificationData.bookingID;
+      props.setProperty(key, JSON.stringify(notificationData));
+
+      // Create a one-time trigger to send notifications in 2 seconds
+      ScriptApp.newTrigger('processBookingNotifications')
+        .timeBased()
+        .after(2000) // 2 seconds
+        .create();
+
+      logInfo('BOOKING_NOTIFY_SCHEDULED', 'Notifications scheduled', { bookingID: notificationData.bookingID });
+    } catch (e) {
+      // If scheduling fails, send synchronously as fallback
+      logError('BOOKING_NOTIFY_SCHEDULE_FAIL', 'Failed to schedule, sending sync', { error: e.toString() });
+      sendBookingNotificationsSync(notificationData);
+    }
+  }
+
+  function processBookingNotifications(e) {
+    const props = PropertiesService.getScriptProperties();
+    const allProps = props.getProperties();
+
+    // Find and process booking notification
+    for (const key in allProps) {
+      if (key.startsWith('BOOKING_NOTIFY_')) {
+        try {
+          const data = JSON.parse(allProps[key]);
+          sendBookingNotificationsSync(data);
+          props.deleteProperty(key);
+        } catch (err) {
+          logError('BOOKING_NOTIFY_PROCESS_FAIL', 'Failed to process notification', { key: key, error: err.toString() });
+          props.deleteProperty(key);
+        }
+      }
+    }
+
+    // Clean up the trigger
+    if (e && e.triggerUid) {
+      const triggers = ScriptApp.getProjectTriggers();
+      for (const trigger of triggers) {
+        if (trigger.getUniqueId() === e.triggerUid) {
+          ScriptApp.deleteTrigger(trigger);
+          break;
+        }
+      }
+    }
+  }
+
+  function sendBookingNotificationsSync(data) {
+    // Send EMAIL backup
+    try {
+      MailApp.sendEmail({
+        to: 'potpot@atlasventuresonline.com',
+        subject: data.bookingFound ? '✅ PotPot Booking: ' + data.bookingID : '❌ BOOKING FAILED: ' + data.bookingID,
+        body: 'Booking ID: ' + data.bookingID +
+              '\nCustomer: ' + (data.customerName || 'N/A') +
+              '\nPhone: ' + (data.phone || 'N/A') +
+              '\nDate: ' + data.formattedDate +
+              '\nTime: ' + data.timeSlot +
+              '\nPlants: ' + (data.plantCount || 'N/A') +
+              '\nAddress: ' + (data.address || 'N/A') +
+              '\nGardener: ' + (data.gardenerName || 'N/A') + ' (' + data.gardenerID + ')' +
+              '\nMap: ' + (data.mapLink || 'N/A') +
+              '\n\n' + (data.bookingFound ? '✅ Verified in sheet: YES (Row ' + data.foundAtRow + ')' : '❌ VERIFIED IN SHEET: NO - CHECK LOGS TAB!')
+      });
+      logInfo('BOOKING_EMAIL_SENT', 'Backup email sent', { bookingID: data.bookingID });
+    } catch (emailError) {
+      logError('BOOKING_EMAIL_FAIL', 'Failed to send backup email', {
+        bookingID: data.bookingID,
+        error: emailError.toString()
+      });
+    }
+
+    // Send WHATSAPP confirmation
     if (data.phone) {
       try {
-        sendBookingConfirmation(
-          data.phone,
-          data.dateFormatted || formattedDate,
-          data.timeSlot
-        );
+        sendBookingConfirmation(data.phone, data.formattedDate, data.timeSlot);
         logInfo('BOOKING_WHATSAPP_SENT', 'WhatsApp confirmation sent', {
-          bookingID: bookingID,
+          bookingID: data.bookingID,
           phone: data.phone
         });
       } catch (whatsappError) {
         logError('BOOKING_WHATSAPP_FAIL', 'WhatsApp confirmation failed', {
-          bookingID: bookingID,
+          bookingID: data.bookingID,
           phone: data.phone,
           error: whatsappError.toString()
         });
       }
     }
-
-    return {
-      bookingID: bookingID,
-      message: 'Booking confirmed! Visit on ' + formattedDate + ' at ' + data.timeSlot
-    };
   }
 
   // ============================================
