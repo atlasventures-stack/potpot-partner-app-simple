@@ -1199,7 +1199,7 @@
         timeSlot: formatTimeSlotForDisplay(bookingsData[i][7]),
         plantCount: bookingsData[i][8],
         notes: bookingsData[i][24] || '',  // Column Y - Partner Notes
-        amount: bookingsData[i][20] || 0,  // Column U - Amount
+        amount: bookingsData[i][20] !== '' && bookingsData[i][20] !== null && bookingsData[i][20] !== undefined ? bookingsData[i][20] : null,  // Column U - Amount (null if blank, so frontend calculates from plants)
         status: isCompleted ? 'COMPLETED' : 'PENDING'
       });
     }

@@ -2393,13 +2393,21 @@
         }
 
         async function initPaymentSection() {
+            console.log('=== initPaymentSection START ===');
+            console.log('currentJob.id:', currentJob.id);
+            console.log('currentJob.amount BEFORE fetch:', currentJob.amount, typeof currentJob.amount);
+            console.log('reportData.totalPlants:', reportData.totalPlants);
+
             // Fetch fresh job data to get latest amount
             try {
                 const response = await fetch(`${API_URL}?action=getGardenerJobs&phone=${currentUser.phone}`);
                 const data = await response.json();
+                console.log('Fresh jobs API response:', JSON.stringify(data));
                 if (data.success && data.jobs) {
                     const freshJob = data.jobs.find(j => j.id === currentJob.id);
+                    console.log('Found fresh job:', freshJob);
                     if (freshJob) {
+                        console.log('freshJob.amount:', freshJob.amount, typeof freshJob.amount);
                         currentJob.amount = freshJob.amount;
                     }
                 }
@@ -2415,8 +2423,15 @@
             const jobAmount = currentJob.amount;
             let amount = 0;
 
+            console.log('jobAmount AFTER fetch:', jobAmount, typeof jobAmount);
+            console.log('jobAmount === 0:', jobAmount === 0);
+            console.log('jobAmount === "0":', jobAmount === '0');
+            console.log('jobAmount === null:', jobAmount === null);
+            console.log('!jobAmount:', !jobAmount);
+
             // Check if amount is explicitly 0
             if (jobAmount === 0 || jobAmount === '0') {
+                console.log('HIDING: amount is explicitly 0');
                 document.getElementById('paymentSection').style.display = 'none';
                 return;
             }
@@ -2425,13 +2440,18 @@
             if (jobAmount === null || jobAmount === undefined || jobAmount === '' || !jobAmount) {
                 // Calculate from partner's entered plant count
                 amount = calculatePriceFromPlants(reportData.totalPlants);
+                console.log('Calculated amount from plants:', amount, 'for', reportData.totalPlants, 'plants');
             } else {
                 // Use the amount from job data
                 amount = parseFloat(jobAmount) || 0;
+                console.log('Using job amount:', amount);
             }
+
+            console.log('Final amount:', amount);
 
             // If amount is still 0, hide payment section
             if (!amount || amount <= 0) {
+                console.log('HIDING: final amount is 0 or less');
                 document.getElementById('paymentSection').style.display = 'none';
                 return;
             }
@@ -2444,6 +2464,13 @@
                 <div class="spinner-small"></div>
                 <span>Creating payment link...</span>
             `;
+
+            console.log('Creating payment link with:', {
+                bookingID: currentJob.id,
+                amount: amount,
+                customerName: currentJob.customerName,
+                customerPhone: currentJob.customerPhone
+            });
 
             try {
                 const response = await fetch(API_URL, {
@@ -2459,11 +2486,14 @@
                 });
 
                 const result = await response.json();
+                console.log('createPaymentLink API response:', result);
 
                 if (result.success && result.paymentLink) {
                     paymentLinkId = result.paymentLinkId;
+                    console.log('Payment link created:', result.paymentLink);
 
                     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(result.paymentLink)}`;
+                    console.log('QR URL:', qrUrl);
                     document.getElementById('paymentQR').src = qrUrl;
 
                     document.getElementById('paymentStatus').innerHTML = `
@@ -2473,6 +2503,7 @@
 
                     startPaymentStatusCheck();
                 } else {
+                    console.error('Payment link creation failed:', result);
                     throw new Error(result.error || 'Failed to create payment link');
                 }
             } catch (error) {
@@ -2482,6 +2513,7 @@
                     <span>⚠️ Could not create payment link. Use cash.</span>
                 `;
             }
+            console.log('=== initPaymentSection END ===');
         }
 
         function startPaymentStatusCheck() {
