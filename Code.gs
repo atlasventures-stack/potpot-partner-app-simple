@@ -1674,16 +1674,31 @@
       rowLength: bookingRow.length
     });
 
-    // Save to sheet
+    // Save to sheet - using getLastRow + setValues (more reliable than appendRow with protected sheets)
+    let targetRow;
     try {
-      bookingsSheet.appendRow(bookingRow);
-      logInfo('BOOKING_APPEND_OK', 'appendRow completed', { bookingID: bookingID });
-    } catch (appendError) {
-      logError('BOOKING_APPEND_FAIL', 'appendRow threw error', {
+      const lastRow = bookingsSheet.getLastRow();
+      targetRow = lastRow + 1;
+
+      logInfo('BOOKING_WRITE_START', 'Writing to specific row', {
         bookingID: bookingID,
-        error: appendError.toString()
+        lastRow: lastRow,
+        targetRow: targetRow,
+        columns: bookingRow.length
       });
-      throw appendError;
+
+      // Use setValues instead of appendRow - more reliable with protected sheets
+      bookingsSheet.getRange(targetRow, 1, 1, bookingRow.length).setValues([bookingRow]);
+
+      logInfo('BOOKING_WRITE_OK', 'setValues completed', { bookingID: bookingID, row: targetRow });
+    } catch (writeError) {
+      logError('BOOKING_WRITE_FAIL', 'setValues threw error', {
+        bookingID: bookingID,
+        targetRow: targetRow,
+        error: writeError.toString(),
+        errorStack: writeError.stack || 'no stack'
+      });
+      throw writeError;
     }
 
     // CRITICAL: Force write to complete
@@ -1724,17 +1739,22 @@
       lastRowsChecked: Math.min(10, totalRows - 1)
     });
 
-    // If not found, retry once
+    // If not found, retry once with setValues
     if (!bookingFound) {
-      logWarning('BOOKING_RETRY', 'Booking not found, attempting retry', { bookingID: bookingID });
+      logWarning('BOOKING_RETRY', 'Booking not found, attempting retry with setValues', { bookingID: bookingID });
 
       try {
-        bookingsSheet.appendRow(bookingRow);
-        logInfo('BOOKING_RETRY_APPEND', 'Retry appendRow completed', { bookingID: bookingID });
-      } catch (retryAppendError) {
-        logError('BOOKING_RETRY_APPEND_FAIL', 'Retry appendRow failed', {
+        const retryLastRow = bookingsSheet.getLastRow();
+        const retryTargetRow = retryLastRow + 1;
+        logInfo('BOOKING_RETRY_WRITE', 'Retry writing to row', { bookingID: bookingID, targetRow: retryTargetRow });
+
+        bookingsSheet.getRange(retryTargetRow, 1, 1, bookingRow.length).setValues([bookingRow]);
+        logInfo('BOOKING_RETRY_WRITE_OK', 'Retry setValues completed', { bookingID: bookingID, row: retryTargetRow });
+      } catch (retryWriteError) {
+        logError('BOOKING_RETRY_WRITE_FAIL', 'Retry setValues failed', {
           bookingID: bookingID,
-          error: retryAppendError.toString()
+          error: retryWriteError.toString(),
+          errorStack: retryWriteError.stack || 'no stack'
         });
       }
 
