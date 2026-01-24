@@ -69,6 +69,7 @@ const SLOT_CONFIG = {
 - `ServiceReports` - Completed service reports
 - `Admins` - Admin phone numbers for dashboard access
 - `CustomerData` - Customer info for follow-ups
+- `Holidays` - Gardener leave/holiday dates
 
 ## WATI Templates
 - `booking_confirmation` - Sent on new booking
@@ -78,16 +79,27 @@ const SLOT_CONFIG = {
 
 ## Recent Changes (2026-01-24)
 
+### Gardener Holidays Module
+- **New sheet:** `Holidays` with columns: GardenerID, StartDate, EndDate, Reason, CreatedAt
+- **How to add holiday:** Add row to Holidays sheet (e.g., G002, 25/01/2026, 27/01/2026, Sick leave)
+- **Single day holiday:** Leave EndDate blank or same as StartDate
+- **What happens:**
+  1. Dates where gardener is on holiday show 0 available slots
+  2. Load balancing considers holidays (gardener with more holidays is deprioritized)
+  3. If ALL gardeners for a pincode are on holiday → that date shows no slots
+- **Helper functions:** `isGardenerOnHoliday()`, `countHolidayDays()`
+- **Response includes:** `holiday: true` flag on dates where gardener is on holiday
+
 ### Gardener Load Balancing
 - **Problem:** Multiple gardeners can serve the same pincodes (G001/G004 share pincodes, G002/G003 share pincodes), but old code always picked the FIRST matching gardener
-- **Solution:** Simple load balancing based on booking count in `getAvailableSlots()` function
+- **Solution:** Load balancing based on bookings + holidays count in `getAvailableSlots()` function
 - **How it works:**
   1. When customer enters pincode, find ALL gardeners serving that pincode
   2. If only 1 gardener → use them (same as before)
-  3. If multiple gardeners → count each gardener's bookings in the next 7 days
-  4. Assign the gardener with fewer bookings
-- **Logging:** `LOAD_BALANCE` entries in Logs sheet show booking counts and selection decision
-- **Location:** `getAvailableSlots()` function, lines 1415-1476
+  3. If multiple gardeners → count each gardener's bookings + holidays in the next 7 days
+  4. Assign the gardener with fewer blocked days
+- **Logging:** `LOAD_BALANCE` entries in Logs sheet show booking counts, holiday counts, and selection decision
+- **Location:** `getAvailableSlots()` function
 
 ## Recent Changes (2026-01-13)
 

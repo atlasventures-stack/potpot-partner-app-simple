@@ -9,6 +9,7 @@
     SERVICE_REPORTS: 'ServiceReports',
     ADMINS: 'Admins',
     LOGS: 'Logs',
+    HOLIDAYS: 'Holidays',
     // User Authentication & Dashboard
     USERS: 'Users',
     OTP_STORE: 'OTPStore',
@@ -1020,6 +1021,85 @@
   }
 
   // ============================================
+  // HELPER: Check if gardener is on holiday for a date
+  // ============================================
+
+  function isGardenerOnHoliday(ss, gardenerID, checkDate) {
+    const holidaysSheet = ss.getSheetByName(TABS.HOLIDAYS);
+    if (!holidaysSheet) return false;
+
+    const holidaysData = holidaysSheet.getDataRange().getValues();
+    const checkDateOnly = new Date(checkDate);
+    checkDateOnly.setHours(0, 0, 0, 0);
+
+    for (let i = 1; i < holidaysData.length; i++) {
+      const holidayGardenerID = String(holidaysData[i][0] || '');
+      if (holidayGardenerID !== String(gardenerID)) continue;
+
+      const startDate = parseDate(holidaysData[i][1]);
+      const endDate = parseDate(holidaysData[i][2]);
+
+      if (!startDate) continue;
+
+      // Set times to start of day for comparison
+      startDate.setHours(0, 0, 0, 0);
+
+      // If no end date, treat as single day holiday
+      const effectiveEndDate = endDate ? new Date(endDate) : new Date(startDate);
+      effectiveEndDate.setHours(23, 59, 59, 999);
+
+      // Check if checkDate falls within holiday range
+      if (checkDateOnly >= startDate && checkDateOnly <= effectiveEndDate) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // ============================================
+  // HELPER: Get holidays count for gardener in date range
+  // ============================================
+
+  function countHolidayDays(ss, gardenerID, startDate, endDate) {
+    const holidaysSheet = ss.getSheetByName(TABS.HOLIDAYS);
+    if (!holidaysSheet) return 0;
+
+    const holidaysData = holidaysSheet.getDataRange().getValues();
+    let holidayCount = 0;
+
+    // Iterate through each day in the range
+    const currentDate = new Date(startDate);
+    currentDate.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
+
+    while (currentDate <= end) {
+      for (let i = 1; i < holidaysData.length; i++) {
+        const holidayGardenerID = String(holidaysData[i][0] || '');
+        if (holidayGardenerID !== String(gardenerID)) continue;
+
+        const holStart = parseDate(holidaysData[i][1]);
+        const holEnd = parseDate(holidaysData[i][2]);
+
+        if (!holStart) continue;
+
+        holStart.setHours(0, 0, 0, 0);
+        const effectiveEnd = holEnd ? new Date(holEnd) : new Date(holStart);
+        effectiveEnd.setHours(23, 59, 59, 999);
+
+        if (currentDate >= holStart && currentDate <= effectiveEnd) {
+          holidayCount++;
+          break; // Don't double count same day
+        }
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return holidayCount;
+  }
+
+  // ============================================
   // HELPER: Calculate distance (Haversine)
   // ============================================
 
@@ -1434,16 +1514,16 @@
         gardenerID = matchingGardeners[0].id;
         gardenerName = matchingGardeners[0].name;
       } else if (matchingGardeners.length > 1) {
-        // Multiple gardeners - load balance by counting bookings
+        // Multiple gardeners - load balance by counting bookings + holidays
         const bookingsSheet = ss.getSheetByName(TABS.BOOKINGS);
         const bookingsData = bookingsSheet.getDataRange().getValues();
 
-        // Count bookings for each gardener in the next 7 days
+        // Count bookings + holidays for each gardener in the next 7 days
         const today = new Date();
         const next7Days = new Date();
         next7Days.setDate(today.getDate() + 7);
 
-        let minBookings = Infinity;
+        let minBlockedDays = Infinity;
         let selectedGardener = matchingGardeners[0]; // Default to first
 
         for (const gardener of matchingGardeners) {
@@ -1462,17 +1542,21 @@
             }
           }
 
-          logInfo('LOAD_BALANCE', `Gardener ${gardener.id} (${gardener.name}) has ${bookingCount} bookings in next 7 days`);
+          // Also count holiday days in next 7 days
+          const holidayCount = countHolidayDays(ss, gardener.id, today, next7Days);
+          const totalBlocked = bookingCount + holidayCount;
 
-          if (bookingCount < minBookings) {
-            minBookings = bookingCount;
+          logInfo('LOAD_BALANCE', `Gardener ${gardener.id} (${gardener.name}): ${bookingCount} bookings + ${holidayCount} holidays = ${totalBlocked} blocked days`);
+
+          if (totalBlocked < minBlockedDays) {
+            minBlockedDays = totalBlocked;
             selectedGardener = gardener;
           }
         }
 
         gardenerID = selectedGardener.id;
         gardenerName = selectedGardener.name;
-        logInfo('LOAD_BALANCE', `Selected gardener: ${gardenerID} (${gardenerName}) with ${minBookings} bookings`);
+        logInfo('LOAD_BALANCE', `Selected gardener: ${gardenerID} (${gardenerName}) with ${minBlockedDays} blocked days`);
       }
     }
 
@@ -1557,6 +1641,18 @@
       const dateKey = Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy');
       const dateFormatted = Utilities.formatDate(date, Session.getScriptTimeZone(), 'EEE, dd MMM');
       const dateInternal = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+
+      // Check if gardener is on holiday for this date
+      if (isGardenerOnHoliday(ss, gardenerID, date)) {
+        // Gardener is on holiday - no slots available for this date
+        dates.push({
+          date: dateInternal,
+          dateFormatted: dateFormatted,
+          times: [],
+          holiday: true
+        });
+        continue;
+      }
 
       const times = [];
 
