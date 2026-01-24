@@ -1415,15 +1415,64 @@
     if (!gardenerID && pincode) {
       const inputPincode = String(pincode).trim().replace('.0', '');
 
+      // Find ALL gardeners matching this pincode
+      const matchingGardeners = [];
       for (let i = 1; i < zonesData.length; i++) {
         const rawPincodes = String(zonesData[i][0] || '');
         const pincodes = rawPincodes.split(',').map(p => String(p).trim().replace('.0', ''));
 
         if (pincodes.includes(inputPincode)) {
-          gardenerID = zonesData[i][2];
-          gardenerName = zonesData[i][1];
-          break;
+          matchingGardeners.push({
+            id: zonesData[i][2],
+            name: zonesData[i][1]
+          });
         }
+      }
+
+      if (matchingGardeners.length === 1) {
+        // Only one gardener - use them
+        gardenerID = matchingGardeners[0].id;
+        gardenerName = matchingGardeners[0].name;
+      } else if (matchingGardeners.length > 1) {
+        // Multiple gardeners - load balance by counting bookings
+        const bookingsSheet = ss.getSheetByName(TABS.BOOKINGS);
+        const bookingsData = bookingsSheet.getDataRange().getValues();
+
+        // Count bookings for each gardener in the next 7 days
+        const today = new Date();
+        const next7Days = new Date();
+        next7Days.setDate(today.getDate() + 7);
+
+        let minBookings = Infinity;
+        let selectedGardener = matchingGardeners[0]; // Default to first
+
+        for (const gardener of matchingGardeners) {
+          let bookingCount = 0;
+
+          for (let i = 1; i < bookingsData.length; i++) {
+            const bookingGardenerID = String(bookingsData[i][4] || '');
+            if (bookingGardenerID !== String(gardener.id)) continue;
+
+            const bookingDate = parseDate(bookingsData[i][6]);
+            if (!bookingDate) continue;
+
+            // Only count future bookings (next 7 days)
+            if (bookingDate >= today && bookingDate <= next7Days) {
+              bookingCount++;
+            }
+          }
+
+          logInfo('LOAD_BALANCE', `Gardener ${gardener.id} (${gardener.name}) has ${bookingCount} bookings in next 7 days`);
+
+          if (bookingCount < minBookings) {
+            minBookings = bookingCount;
+            selectedGardener = gardener;
+          }
+        }
+
+        gardenerID = selectedGardener.id;
+        gardenerName = selectedGardener.name;
+        logInfo('LOAD_BALANCE', `Selected gardener: ${gardenerID} (${gardenerName}) with ${minBookings} bookings`);
       }
     }
 

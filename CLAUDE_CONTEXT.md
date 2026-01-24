@@ -1,6 +1,6 @@
 # PotPot Backend & Partner App Context for Claude
 
-**Last Updated:** 2026-01-13
+**Last Updated:** 2026-01-24
 
 ## ONLY THESE 3 LIVE WEBSITES EXIST
 1. https://www.potpot.online - Main website
@@ -15,7 +15,7 @@
 
 ## Current Backend API
 ```
-https://script.google.com/macros/s/AKfycbyPIbM-Ma5pZCAtCXGC7ZcOY2vU2WpKKKmBo11jwz1dsuMT9K6CqoKUY3QHjDO1KyTH/exec
+https://script.google.com/macros/s/AKfycbzKY6z_05v5Gp7S_7znsyGiee6ySJu8iqY6P8CjDvKzflPI_pNlacduX50-mXhRNL5DxA/exec
 ```
 
 ## How to Deploy Backend (Code.gs)
@@ -75,6 +75,19 @@ const SLOT_CONFIG = {
 - `pre_service_com_time` - Day-before reminder
 - `post_service_checkup` - 5-day follow-up
 - `nps_form` - Sent after service completion
+
+## Recent Changes (2026-01-24)
+
+### Gardener Load Balancing
+- **Problem:** Multiple gardeners can serve the same pincodes (G001/G004 share pincodes, G002/G003 share pincodes), but old code always picked the FIRST matching gardener
+- **Solution:** Simple load balancing based on booking count in `getAvailableSlots()` function
+- **How it works:**
+  1. When customer enters pincode, find ALL gardeners serving that pincode
+  2. If only 1 gardener → use them (same as before)
+  3. If multiple gardeners → count each gardener's bookings in the next 7 days
+  4. Assign the gardener with fewer bookings
+- **Logging:** `LOAD_BALANCE` entries in Logs sheet show booking counts and selection decision
+- **Location:** `getAvailableSlots()` function, lines 1415-1476
 
 ## Recent Changes (2026-01-13)
 
