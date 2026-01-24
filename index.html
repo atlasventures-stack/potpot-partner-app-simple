@@ -2026,7 +2026,7 @@
                     <div class="job-header">
                         <div class="job-customer">
                             ${job.customerName}
-                            ${job.customerPhone ? `<a href="tel:${job.customerPhone}" onclick="event.stopPropagation();" style="margin-left: 8px; color: #4caf50; text-decoration: none;">📞</a>` : ''}
+                            ${job.customerPhone ? `<a href="tel:+91${job.customerPhone.replace(/\\D/g, '').slice(-10)}" onclick="event.stopPropagation();" style="margin-left: 8px; color: #4caf50; text-decoration: none;">📞</a>` : ''}
                         </div>
                         <span class="service-badge">
                             ${status === 'completed' ? '✅ Done' : status === 'ongoing' ? '🔄 Ongoing' : '🛠️ Service'}
