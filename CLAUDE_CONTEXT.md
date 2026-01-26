@@ -1,6 +1,6 @@
 # PotPot Backend & Partner App Context for Claude
 
-**Last Updated:** 2026-01-24
+**Last Updated:** 2026-01-26
 
 ## ONLY THESE 3 LIVE WEBSITES EXIST
 1. https://www.potpot.online - Main website
@@ -35,13 +35,13 @@ https://script.google.com/macros/s/AKfycbzKY6z_05v5Gp7S_7znsyGiee6ySJu8iqY6P8CjD
 - `?pincode=X&lat=Y&lng=Z&plantCount=N` - Get available slots
 - `?action=getGardenerJobs&phone=X` - Get gardener's jobs for today
 - `?action=getAdminReports&phone=X` - Get admin dashboard data
-- `?action=checkPaymentStatus&paymentLinkId=X` - Check Razorpay payment
+- `?action=checkPaymentStatus&paymentLinkId=X` - Check Razorpay payment (DEPRECATED - not used by partner app)
 
 ### POST Requests
 - Booking creation (default) - Creates new booking
 - `{action: 'saveServiceReport', ...}` - Save service completion report
-- `{action: 'createPaymentLink', ...}` - Create Razorpay payment link
-- `{action: 'updatePaymentStatus', ...}` - Update payment status
+- `{action: 'createPaymentLink', ...}` - Create Razorpay payment link (DEPRECATED - not used by partner app)
+- `{action: 'updatePaymentStatus', ...}` - Update payment status (used when gardener marks payment complete)
 
 ## Slot System Config
 ```javascript
@@ -77,7 +77,62 @@ const SLOT_CONFIG = {
 - `post_service_checkup` - 5-day follow-up
 - `nps_form` - Sent after service completion
 
+## Recent Changes (2026-01-26)
+
+### Simplified Payment Flow (Partner App)
+- **Old flow (removed):** Service complete → Create Razorpay link → Generate dynamic QR → Poll for payment status → Auto-update on payment
+- **New flow:** Service complete → Show static UPI QR → Gardener asks customer → Gardener taps "Payment Done" button → Update sheet + Amplitude event
+
+#### What was removed:
+- Razorpay `createPaymentLink` API call
+- Razorpay `checkPaymentStatus` polling (every 5 seconds)
+- Dynamic QR generation from payment link
+- `paymentLinkId` and `paymentCheckInterval` variables
+
+#### What was added:
+- Static UPI QR code placeholder (replace `https://via.placeholder.com/200x200?text=UPI+QR` with actual QR)
+- "Payment Done" button (`markPaymentComplete()` function)
+- Manual confirmation flow - gardener confirms with customer verbally
+
+#### Functions changed:
+- `initPaymentSection()` - Simplified, only calculates amount and shows QR
+- `markPaymentComplete()` - NEW - calls `updatePaymentStatus` API when gardener taps button
+- `skipPayment()` - Simplified, just hides payment section
+- `backToDashboard()` - Simplified, removed interval cleanup
+
+### Amplitude Server-Side Tracking (Code.gs)
+- **Problem:** Events happen in partner app (gardener's device), but should track on customer's Amplitude profile
+- **Solution:** Async server-side Amplitude tracking via one-time triggers (doesn't block gardener)
+- **API:** Amplitude HTTP API (`https://api2.amplitude.com/2/httpapi`)
+- **User matching:** Uses customer phone (last 10 digits) as user_id - matches frontend booking.html
+
+#### Functions Added:
+- `scheduleAmplitudeEvent(eventData)` - Creates one-time trigger (5 sec delay), stores event data
+- `processDelayedAmplitudeEvent(e)` - Triggered function that sends to Amplitude, cleans up
+- `trackServiceCompleted(data)` - Called from `saveServiceReport()`
+- `trackPaymentSuccess(reportRow)` - Called from `updatePaymentStatus()`
+
+#### Event: Service Completed
+- **Triggered from:** `saveServiceReport()` when gardener submits service report
+- **Properties:** booking_id, gardener_id, gardener_name, total_plants, red_zone_plants, bugs_found, repotted_plants, service_started_at, service_completed_at, service_duration_minutes, amount
+
+#### Event: Payment Success
+- **Triggered from:** `updatePaymentStatus()` when payment status is "Paid"
+- **Properties:** booking_id, gardener_id, gardener_name, total_plants, amount, currency (INR), payment_method (Razorpay)
+
+### Partner App Bug Fix: customerPhone String Conversion
+- **Bug:** `TypeError: job.customerPhone.replace is not a function`
+- **Cause:** Google Sheets returns phone numbers as numbers, not strings
+- **Fix:** Wrapped in `String()`: `String(job.customerPhone).replace(...)`
+- **Location:** Partner app index.html, tel: link in job cards
+
 ## Recent Changes (2026-01-24)
+
+### Lead Source Tracking (Code.gs)
+- **New column:** `LeadSource` in Bookings sheet (Column AE - after column AD)
+- **Values:** Facebook, Google, Organic, Direct
+- **Stored in:** `createBooking()` function, added to bookingRow at index 30
+- **Setup required:** Add "LeadSource" header in column AD of Bookings sheet
 
 ### Gardener Holidays Module
 - **New sheet:** `Holidays` with columns: GardenerID, StartDate, EndDate, Reason, CreatedAt

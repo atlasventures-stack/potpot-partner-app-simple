@@ -641,6 +641,11 @@
             reportsSheet.getRange(i + 1, 24).setValue(data.paymentCompletedAt);
           }
 
+          // Schedule Amplitude "Payment Success" event (async - doesn't block)
+          if (data.status === 'Paid' || !data.status) {
+            trackPaymentSuccess(reportsData[i]);
+          }
+
           Logger.log('Payment status updated for booking: ' + data.bookingID);
           return { success: true, message: 'Payment status updated' };
         }
@@ -651,6 +656,145 @@
       Logger.log('updatePaymentStatus error: ' + error.toString());
       return { success: false, error: error.toString() };
     }
+  }
+
+  // ============================================
+  // AMPLITUDE SERVER-SIDE TRACKING (Async via Triggers)
+  // ============================================
+
+  const AMPLITUDE_API_KEY = '17abf777767237620e6398f575a1fff4';
+
+  // Schedule Amplitude event to fire async (doesn't block main operation)
+  function scheduleAmplitudeEvent(eventData) {
+    try {
+      // Create a one-time trigger to run after 5 seconds
+      const trigger = ScriptApp.newTrigger('processDelayedAmplitudeEvent')
+        .timeBased()
+        .after(5 * 1000) // 5 seconds
+        .create();
+
+      // Store event data with trigger ID
+      const props = PropertiesService.getScriptProperties();
+      props.setProperty('amp_' + trigger.getUniqueId(), JSON.stringify(eventData));
+
+      Logger.log('Amplitude event scheduled: ' + eventData.event_type);
+    } catch (e) {
+      Logger.log('Failed to schedule Amplitude event: ' + e.toString());
+    }
+  }
+
+  // Triggered function - sends event to Amplitude
+  function processDelayedAmplitudeEvent(e) {
+    try {
+      const triggerId = e.triggerUid;
+      const props = PropertiesService.getScriptProperties();
+      const dataKey = 'amp_' + triggerId;
+      const dataStr = props.getProperty(dataKey);
+
+      if (!dataStr) {
+        Logger.log('No Amplitude data found for trigger: ' + triggerId);
+        return;
+      }
+
+      const eventData = JSON.parse(dataStr);
+
+      // Send to Amplitude
+      const payload = {
+        api_key: AMPLITUDE_API_KEY,
+        events: [{
+          user_id: eventData.user_id,
+          event_type: eventData.event_type,
+          time: eventData.time || Date.now(),
+          event_properties: eventData.event_properties || {}
+        }]
+      };
+
+      const options = {
+        method: 'post',
+        contentType: 'application/json',
+        payload: JSON.stringify(payload),
+        muteHttpExceptions: true
+      };
+
+      const response = UrlFetchApp.fetch('https://api2.amplitude.com/2/httpapi', options);
+      const responseCode = response.getResponseCode();
+
+      if (responseCode === 200) {
+        Logger.log('✅ Amplitude event sent: ' + eventData.event_type + ' for user: ' + eventData.user_id);
+      } else {
+        Logger.log('Amplitude API error: ' + responseCode + ' - ' + response.getContentText());
+      }
+
+      // Clean up stored data
+      props.deleteProperty(dataKey);
+
+      // Delete the trigger
+      const triggers = ScriptApp.getProjectTriggers();
+      for (const t of triggers) {
+        if (t.getUniqueId() === triggerId) {
+          ScriptApp.deleteTrigger(t);
+          break;
+        }
+      }
+    } catch (error) {
+      Logger.log('processDelayedAmplitudeEvent error: ' + error.toString());
+    }
+  }
+
+  // Schedule "Service Completed" event
+  function trackServiceCompleted(data) {
+    const normalizedPhone = String(data.customerPhone || '').replace(/\D/g, '').slice(-10);
+    if (!normalizedPhone) return;
+
+    // Calculate service duration if we have start time
+    let durationMinutes = null;
+    if (data.serviceStartedAt) {
+      const startTime = new Date(data.serviceStartedAt);
+      const endTime = new Date();
+      durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
+    }
+
+    scheduleAmplitudeEvent({
+      user_id: normalizedPhone,
+      event_type: 'Service Completed',
+      time: Date.now(),
+      event_properties: {
+        booking_id: data.bookingID || '',
+        gardener_id: data.gardenerID || '',
+        gardener_name: data.gardenerName || '',
+        total_plants: data.totalPlants || 0,
+        red_zone_plants: data.redZonePlants || 0,
+        bugs_found: data.bugsFound || 'No',
+        repotted_plants: data.repottedPlants || '',
+        service_started_at: data.serviceStartedAt || '',
+        service_completed_at: new Date().toISOString(),
+        service_duration_minutes: durationMinutes,
+        amount: data.amount || 0
+      }
+    });
+  }
+
+  // Schedule "Payment Success" event
+  function trackPaymentSuccess(reportRow) {
+    // reportRow is the full row from ServiceReports sheet
+    const customerPhone = String(reportRow[6] || ''); // Column G
+    const normalizedPhone = customerPhone.replace(/\D/g, '').slice(-10);
+    if (!normalizedPhone) return;
+
+    scheduleAmplitudeEvent({
+      user_id: normalizedPhone,
+      event_type: 'Payment Success',
+      time: Date.now(),
+      event_properties: {
+        booking_id: reportRow[1] || '',      // Column B
+        gardener_id: reportRow[2] || '',     // Column C
+        gardener_name: reportRow[3] || '',   // Column D
+        total_plants: reportRow[8] || 0,     // Column I
+        amount: reportRow[16] || 0,          // Column Q
+        currency: 'INR',
+        payment_method: 'Razorpay'
+      }
+    });
   }
 
   // ============================================
@@ -1446,6 +1590,11 @@
       ''  // PaymentCompletedAt - filled when payment is done
     ]);
 
+    // Schedule Amplitude "Service Completed" event (async - doesn't block)
+    if (data.customerPhone) {
+      trackServiceCompleted(data);
+    }
+
     // Schedule NPS form to send in background (gardener doesn't wait)
     if (data.customerPhone) {
       scheduleNPSForm(data.customerPhone, reportID);
@@ -1797,20 +1946,24 @@
     const bookingID = 'PP' + Date.now().toString(36).toUpperCase();
 
     // Prepare booking row data
+    // Columns A-M written by code, N-AD filled by other processes, AE=LeadSource (new)
     const bookingRow = [
-      bookingID,
-      data.customerName || 'Customer',
-      data.phone || '',
-      data.pincode,
-      data.gardenerID,
-      data.gardenerName || '',
-      formattedDate,
-      data.timeSlot,
-      data.plantCount || '',
-      data.address || data.fullAddress || '',
-      data.mapLink || '',
-      data.notes || '',
-      new Date()
+      bookingID,                              // 0  - A: BookingID
+      data.customerName || 'Customer',        // 1  - B: CustomerName
+      data.phone || '',                       // 2  - C: Phone
+      data.pincode,                           // 3  - D: Pincode
+      data.gardenerID,                        // 4  - E: GardenerID
+      data.gardenerName || '',                // 5  - F: GardenerName
+      formattedDate,                          // 6  - G: Date
+      data.timeSlot,                          // 7  - H: TimeSlot
+      data.plantCount || '',                  // 8  - I: PlantCount
+      data.address || data.fullAddress || '', // 9  - J: Address
+      data.mapLink || '',                     // 10 - K: MapLink
+      '',                                     // 11 - L: ReachTime
+      new Date(),                             // 12 - M: BookedAt
+      '', '', '', '', '', '', '', '',         // 13-20: N-U (Notes through Amount)
+      '', '', '', '', '', '', '', '', '',     // 21-29: V-AD (Payment through col AD)
+      data.leadSource || 'Unknown'            // 30 - AE: LeadSource
     ];
 
     // LOG: About to save

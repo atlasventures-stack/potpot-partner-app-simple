@@ -1004,14 +1004,14 @@
             background: white;
             padding: 16px;
             border-radius: 12px;
-            display: inline-block;
-            margin-bottom: 16px;
+            margin: 0 auto 16px auto;
+            max-width: 320px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .payment-qr img {
-            width: 200px;
-            height: 200px;
+            width: 100%;
+            height: auto;
         }
 
         .payment-status {
@@ -1332,13 +1332,13 @@
                 <h2>Collect Payment <span class="hindi">(पेमेंट लें)</span></h2>
                 <div id="paymentAmount" class="payment-amount">₹0</div>
                 <div class="payment-qr">
-                    <img id="paymentQR" src="" alt="Payment QR">
-                </div>
-                <div id="paymentStatus" class="payment-status pending">
-                    <div class="spinner-small"></div>
-                    <span>Waiting for payment... <span class="hindi">(पेमेंट का इंतज़ार...)</span></span>
+                    <img id="paymentQR" src="qr_payment_atlas.png" alt="PhonePe Payment QR - Atlas Ventures">
                 </div>
                 <p class="payment-hint">Customer can scan this QR to pay <span class="hindi">(कस्टमर इस QR को स्कैन करके पे करें)</span></p>
+                <div id="paymentStatus" class="payment-status pending"></div>
+                <button id="markPaidBtn" class="btn btn-success" onclick="markPaymentComplete()" style="margin-top: 15px; background: #28a745; width: 100%;">
+                    ✅ Payment Done <span class="hindi">(पेमेंट हो गया)</span>
+                </button>
                 <button class="skip-payment-btn" onclick="skipPayment()">Skip / Pay Later <span class="hindi">(बाद में पेमेंट)</span></button>
             </div>
 
@@ -2026,7 +2026,7 @@
                     <div class="job-header">
                         <div class="job-customer">
                             ${job.customerName}
-                            ${job.customerPhone ? `<a href="tel:+91${job.customerPhone.replace(/\\D/g, '').slice(-10)}" onclick="event.stopPropagation();" style="margin-left: 8px; color: #4caf50; text-decoration: none;">📞</a>` : ''}
+                            ${job.customerPhone ? `<a href="tel:+91${String(job.customerPhone).replace(/\\D/g, '').slice(-10)}" onclick="event.stopPropagation();" style="margin-left: 8px; color: #4caf50; text-decoration: none;">📞</a>` : ''}
                         </div>
                         <span class="service-badge">
                             ${status === 'completed' ? '✅ Done' : status === 'ongoing' ? '🔄 Ongoing' : '🛠️ Service'}
@@ -2341,9 +2341,6 @@
             }
         }
 
-        let paymentLinkId = null;
-        let paymentCheckInterval = null;
-
         function showCompleteScreen() {
             document.getElementById('serviceScreen').classList.add('hidden');
             document.getElementById('completeScreen').classList.remove('hidden');
@@ -2392,22 +2389,19 @@
             return 1499; // 101+ plants
         }
 
+        // Store current payment amount for use in markPaymentComplete
+        let currentPaymentAmount = 0;
+
         async function initPaymentSection() {
             console.log('=== initPaymentSection START ===');
-            console.log('currentJob.id:', currentJob.id);
-            console.log('currentJob.amount BEFORE fetch:', currentJob.amount, typeof currentJob.amount);
-            console.log('reportData.totalPlants:', reportData.totalPlants);
 
             // Fetch fresh job data to get latest amount
             try {
                 const response = await fetch(`${API_URL}?action=getGardenerJobs&phone=${currentUser.phone}`);
                 const data = await response.json();
-                console.log('Fresh jobs API response:', JSON.stringify(data));
                 if (data.success && data.jobs) {
                     const freshJob = data.jobs.find(j => j.id === currentJob.id);
-                    console.log('Found fresh job:', freshJob);
                     if (freshJob) {
-                        console.log('freshJob.amount:', freshJob.amount, typeof freshJob.amount);
                         currentJob.amount = freshJob.amount;
                     }
                 }
@@ -2423,15 +2417,8 @@
             const jobAmount = currentJob.amount;
             let amount = 0;
 
-            console.log('jobAmount AFTER fetch:', jobAmount, typeof jobAmount);
-            console.log('jobAmount === 0:', jobAmount === 0);
-            console.log('jobAmount === "0":', jobAmount === '0');
-            console.log('jobAmount === null:', jobAmount === null);
-            console.log('!jobAmount:', !jobAmount);
-
             // Check if amount is explicitly 0
             if (jobAmount === 0 || jobAmount === '0') {
-                console.log('HIDING: amount is explicitly 0');
                 document.getElementById('paymentSection').style.display = 'none';
                 return;
             }
@@ -2440,111 +2427,32 @@
             if (jobAmount === null || jobAmount === undefined || jobAmount === '' || !jobAmount) {
                 // Calculate from partner's entered plant count
                 amount = calculatePriceFromPlants(reportData.totalPlants);
-                console.log('Calculated amount from plants:', amount, 'for', reportData.totalPlants, 'plants');
             } else {
                 // Use the amount from job data
                 amount = parseFloat(jobAmount) || 0;
-                console.log('Using job amount:', amount);
             }
-
-            console.log('Final amount:', amount);
 
             // If amount is still 0, hide payment section
             if (!amount || amount <= 0) {
-                console.log('HIDING: final amount is 0 or less');
                 document.getElementById('paymentSection').style.display = 'none';
                 return;
             }
 
+            // Store amount for later use
+            currentPaymentAmount = amount;
+
             document.getElementById('paymentAmount').textContent = `₹${amount}`;
             document.getElementById('paymentSection').style.display = 'block';
+            document.getElementById('paymentStatus').innerHTML = '';
+            document.getElementById('markPaidBtn').style.display = 'block';
 
-            document.getElementById('paymentStatus').className = 'payment-status pending';
-            document.getElementById('paymentStatus').innerHTML = `
-                <div class="spinner-small"></div>
-                <span>Creating payment link...</span>
-            `;
-
-            console.log('Creating payment link with:', {
-                bookingID: currentJob.id,
-                amount: amount,
-                customerName: currentJob.customerName,
-                customerPhone: currentJob.customerPhone
-            });
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({
-                        action: 'createPaymentLink',
-                        bookingID: currentJob.id,
-                        amount: amount,
-                        customerName: currentJob.customerName,
-                        customerPhone: currentJob.customerPhone
-                    })
-                });
-
-                const result = await response.json();
-                console.log('createPaymentLink API response:', result);
-
-                if (result.success && result.paymentLink) {
-                    paymentLinkId = result.paymentLinkId;
-                    console.log('Payment link created:', result.paymentLink);
-
-                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(result.paymentLink)}`;
-                    console.log('QR URL:', qrUrl);
-                    document.getElementById('paymentQR').src = qrUrl;
-
-                    document.getElementById('paymentStatus').innerHTML = `
-                        <div class="spinner-small"></div>
-                        <span>Waiting for payment...</span>
-                    `;
-
-                    startPaymentStatusCheck();
-                } else {
-                    console.error('Payment link creation failed:', result);
-                    throw new Error(result.error || 'Failed to create payment link');
-                }
-            } catch (error) {
-                console.error('Payment link error:', error);
-                document.getElementById('paymentStatus').className = 'payment-status pending';
-                document.getElementById('paymentStatus').innerHTML = `
-                    <span>⚠️ Could not create payment link. Use cash.</span>
-                `;
-            }
             console.log('=== initPaymentSection END ===');
         }
 
-        function startPaymentStatusCheck() {
-            if (paymentCheckInterval) {
-                clearInterval(paymentCheckInterval);
-            }
-
-            paymentCheckInterval = setInterval(async () => {
-                if (!paymentLinkId) return;
-
-                try {
-                    const response = await fetch(`${API_URL}?action=checkPaymentStatus&paymentLinkId=${paymentLinkId}`);
-                    const result = await response.json();
-
-                    if (result.success && result.status === 'paid') {
-                        clearInterval(paymentCheckInterval);
-                        showPaymentSuccess();
-                    }
-                } catch (error) {
-                    console.error('Payment status check error:', error);
-                }
-            }, 5000);
-        }
-
-        async function showPaymentSuccess() {
-            document.getElementById('paymentStatus').className = 'payment-status paid';
-            document.getElementById('paymentStatus').innerHTML = `
-                <span>✅ Payment Received!</span>
-            `;
-
-            document.querySelector('.skip-payment-btn').style.display = 'none';
+        async function markPaymentComplete() {
+            const btn = document.getElementById('markPaidBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner-small"></div> Updating...';
 
             try {
                 await fetch(API_URL, {
@@ -2554,36 +2462,36 @@
                         action: 'updatePaymentStatus',
                         bookingID: currentJob.id,
                         status: 'Paid',
-                        paymentLinkId: paymentLinkId,
                         paymentCompletedAt: new Date().toISOString()
                     })
                 });
+
+                // Show success
+                document.getElementById('paymentStatus').className = 'payment-status paid';
+                document.getElementById('paymentStatus').innerHTML = `<span>✅ Payment Received! (पेमेंट मिल गया!)</span>`;
+                btn.style.display = 'none';
+                document.querySelector('.skip-payment-btn').style.display = 'none';
+
+                if (navigator.vibrate) {
+                    navigator.vibrate([200, 100, 200]);
+                }
             } catch (e) {
                 console.error('Failed to update payment status:', e);
-            }
-
-            if (navigator.vibrate) {
-                navigator.vibrate([200, 100, 200]);
+                btn.disabled = false;
+                btn.innerHTML = '✅ Payment Done <span class="hindi">(पेमेंट हो गया)</span>';
+                document.getElementById('paymentStatus').innerHTML = `<span style="color: red;">⚠️ Error updating. Try again.</span>`;
             }
         }
 
         function skipPayment() {
-            if (paymentCheckInterval) {
-                clearInterval(paymentCheckInterval);
-            }
             document.getElementById('paymentSection').style.display = 'none';
         }
 
         function backToDashboard() {
-            if (paymentCheckInterval) {
-                clearInterval(paymentCheckInterval);
-                paymentCheckInterval = null;
-            }
-            paymentLinkId = null;
-
             document.getElementById('completeScreen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             currentJob = null;
+            currentPaymentAmount = 0;
             renderJobs();
         }
 
