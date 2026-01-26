@@ -1000,6 +1000,21 @@
             margin-bottom: 16px;
         }
 
+        .payment-amount-shimmer {
+            height: 44px;
+            width: 120px;
+            margin: 0 auto 16px auto;
+            background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         .payment-qr {
             background: white;
             padding: 16px;
@@ -1328,9 +1343,10 @@
             <p>Report has been saved successfully. <span class="hindi">(रिपोर्ट सेव हो गई।)</span></p>
 
             <!-- Payment Section -->
-            <div id="paymentSection" class="payment-section">
+            <div id="paymentSection" class="payment-section" style="display: none;">
                 <h2>Collect Payment <span class="hindi">(पेमेंट लें)</span></h2>
-                <div id="paymentAmount" class="payment-amount">₹0</div>
+                <div id="paymentAmountShimmer" class="payment-amount-shimmer"></div>
+                <div id="paymentAmount" class="payment-amount" style="display: none;"></div>
                 <div class="payment-qr">
                     <img id="paymentQR" src="qr_payment_atlas.png" alt="PhonePe Payment QR - Atlas Ventures">
                 </div>
@@ -2395,6 +2411,11 @@
         async function initPaymentSection() {
             console.log('=== initPaymentSection START ===');
 
+            // Show payment section with shimmer while loading
+            document.getElementById('paymentSection').style.display = 'block';
+            document.getElementById('paymentAmountShimmer').style.display = 'block';
+            document.getElementById('paymentAmount').style.display = 'none';
+
             // Fetch fresh job data to get latest amount
             try {
                 const response = await fetch(`${API_URL}?action=getGardenerJobs&phone=${currentUser.phone}`);
@@ -2441,8 +2462,10 @@
             // Store amount for later use
             currentPaymentAmount = amount;
 
+            // Hide shimmer, show actual amount
+            document.getElementById('paymentAmountShimmer').style.display = 'none';
+            document.getElementById('paymentAmount').style.display = 'block';
             document.getElementById('paymentAmount').textContent = `₹${amount}`;
-            document.getElementById('paymentSection').style.display = 'block';
             document.getElementById('paymentStatus').innerHTML = '';
             document.getElementById('markPaidBtn').style.display = 'block';
 
