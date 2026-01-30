@@ -57,10 +57,18 @@ const SLOT_CONFIG = {
 
 ## Service Duration (minutes)
 - 0 plants (old bookings): 90
-- 1-20 plants: 60
-- 21-35 plants: 90
-- 36-50 plants: 120
+- 0-10 plants: 60 (no travel buffer)
+- 11-30 plants: 60
+- 31-50 plants: 120
 - 51+ plants: 180
+
+## Pricing Tiers
+- 0-10 plants: ₹499
+- 11-30 plants: ₹699
+- 31-50 plants: ₹899
+- 51-75 plants: ₹1199
+- 76-100 plants: ₹1399
+- 101-150 plants: ₹1499
 
 ## Google Sheets Tabs
 - `Bookings` - All bookings
@@ -170,12 +178,12 @@ const SLOT_CONFIG = {
   - `Amount = blank/empty` → Calculate from partner's entered plant count
   - `Amount = value` → Show that exact amount
 - **Pricing tiers (when calculating from plants):**
-  - 1-20 plants → ₹399
-  - 21-35 plants → ₹599
-  - 36-50 plants → ₹799
-  - 51-75 plants → ₹999
-  - 76-100 plants → ₹1199
-  - 101+ plants → ₹1499
+  - 0-10 plants → ₹499
+  - 11-30 plants → ₹699
+  - 31-50 plants → ₹899
+  - 51-75 plants → ₹1199
+  - 76-100 plants → ₹1399
+  - 101-150 plants → ₹1499
 - Uses `reportData.totalPlants` (actual plants serviced, not booked)
 
 ### Partner App: UI Fixes

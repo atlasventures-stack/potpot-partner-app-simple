@@ -1040,9 +1040,9 @@
     let count = 0;
     const plantStr = String(plantCount);
 
-    // Handle string ranges like "0-20", "20-35", "35-50", "50+"
+    // Handle string ranges like "0-10", "10-30", "30-50", "50+"
     if (plantStr.includes('-')) {
-      // Extract upper bound: "0-20" -> 20, "20-35" -> 35
+      // Extract upper bound: "0-10" -> 10, "10-30" -> 30
       const parts = plantStr.split('-');
       count = parseInt(parts[1]) || parseInt(parts[0]) || 0;
     } else if (plantStr.includes('+')) {
@@ -1054,10 +1054,32 @@
     }
 
     if (count === 0) return 90;       // Default 1.5 hours for old bookings without plantCount
-    if (count <= 20) return 60;       // 1 hour
-    if (count <= 35) return 90;       // 1.5 hours
-    if (count <= 50) return 120;      // 2 hours
-    return 180;                        // 3 hours (51-150 plants)
+    if (count <= 10) return 60;       // 1 hour (0-10 plants)
+    if (count <= 30) return 60;       // 1 hour (11-30 plants)
+    if (count <= 50) return 120;      // 2 hours (31-50 plants)
+    return 180;                        // 3 hours (51+ plants)
+  }
+
+  // ============================================
+  // HELPER: Get travel buffer based on plant count
+  // 0-10 plants: no travel buffer (short service)
+  // All others: 30 min travel buffer
+  // ============================================
+
+  function getTravelBuffer(plantCount) {
+    if (!plantCount) return SLOT_CONFIG.TRAVEL_BUFFER; // Default 30 min
+    const plantStr = String(plantCount);
+    let count = 0;
+    if (plantStr.includes('-')) {
+      const parts = plantStr.split('-');
+      count = parseInt(parts[1]) || parseInt(parts[0]) || 0;
+    } else if (plantStr.includes('+')) {
+      count = parseInt(plantStr) + 1 || 51;
+    } else {
+      count = parseInt(plantStr) || 0;
+    }
+    if (count >= 1 && count <= 10) return 0;
+    return SLOT_CONFIG.TRAVEL_BUFFER;
   }
 
   // ============================================
@@ -1158,8 +1180,8 @@
   // HELPER: Check if service exceeds cutoff
   // ============================================
 
-  function exceedsCutoff(startMins, duration) {
-    const endMins = startMins + duration + SLOT_CONFIG.TRAVEL_BUFFER;
+  function exceedsCutoff(startMins, duration, plantCount) {
+    const endMins = startMins + duration + getTravelBuffer(plantCount);
     const cutoffMins = SLOT_CONFIG.HARD_CUTOFF * 60;
     return endMins > cutoffMins;
   }
@@ -1760,19 +1782,19 @@
       if (!existingBookings[bookingDate]) {
         existingBookings[bookingDate] = [];
       }
-      existingBookings[bookingDate].push({ startMins, duration });
+      existingBookings[bookingDate].push({ startMins, duration, plantCount: bookingPlantCount });
     }
 
     // Generate all 30-min slot times
     const allSlots = generateAllSlots();
 
     // Helper: Check if a slot overlaps with any existing booking
-    function overlapsExistingBooking(dateKey, slotStartMins, newDuration) {
+    function overlapsExistingBooking(dateKey, slotStartMins, newDuration, newPlantCount) {
       const dayBookings = existingBookings[dateKey] || [];
-      const newEndMins = slotStartMins + newDuration + SLOT_CONFIG.TRAVEL_BUFFER;
+      const newEndMins = slotStartMins + newDuration + getTravelBuffer(newPlantCount);
 
       for (const booking of dayBookings) {
-        const bookingEndMins = booking.startMins + booking.duration + SLOT_CONFIG.TRAVEL_BUFFER;
+        const bookingEndMins = booking.startMins + booking.duration + getTravelBuffer(booking.plantCount);
 
         // Check if there's any overlap
         if (slotStartMins < bookingEndMins && newEndMins > booking.startMins) {
@@ -1819,12 +1841,12 @@
         }
 
         // Check 3: Would service exceed 6:30 PM cutoff?
-        if (exceedsCutoff(slotMins, serviceDuration)) {
+        if (exceedsCutoff(slotMins, serviceDuration, plantCount)) {
           continue;
         }
 
         // Check 4: Does this overlap with an existing booking?
-        if (overlapsExistingBooking(dateKey, slotMins, serviceDuration)) {
+        if (overlapsExistingBooking(dateKey, slotMins, serviceDuration, plantCount)) {
           continue;
         }
 
@@ -1893,7 +1915,7 @@
 
     const requestedSlotMins = timeToMinutes(data.timeSlot);
     const requestedDuration = getServiceDuration(data.plantCount);
-    const requestedEndMins = requestedSlotMins + requestedDuration + SLOT_CONFIG.TRAVEL_BUFFER;
+    const requestedEndMins = requestedSlotMins + requestedDuration + getTravelBuffer(data.plantCount);
 
     for (let i = 1; i < bookingsData.length; i++) {
       const bookingGardenerID = String(bookingsData[i][4] || '');
@@ -1923,7 +1945,7 @@
       }
       const existingStartMins = timeToMinutes(existingStartStr);
       const existingDuration = getServiceDuration(bookingsData[i][8]);
-      const existingEndMins = existingStartMins + existingDuration + SLOT_CONFIG.TRAVEL_BUFFER;
+      const existingEndMins = existingStartMins + existingDuration + getTravelBuffer(bookingsData[i][8]);
 
       // Check overlap
       if (requestedSlotMins < existingEndMins && requestedEndMins > existingStartMins) {
