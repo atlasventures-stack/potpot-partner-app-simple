@@ -2806,15 +2806,15 @@
       }
     }
 
-    // Create new trigger at 7 PM IST
+    // Create new trigger at 6 PM IST
     ScriptApp.newTrigger('sendTomorrowBookingsSummary')
       .timeBased()
-      .atHour(19)  // 7 PM
+      .atHour(18)  // 6 PM
       .everyDays(1)
       .inTimezone('Asia/Kolkata')
       .create();
 
-    Logger.log('✅ Daily summary trigger set! sendTomorrowBookingsSummary will run every day at 7 PM IST');
+    Logger.log('✅ Daily summary trigger set! sendTomorrowBookingsSummary will run every day at 6 PM IST');
   }
 
   function setupDailyFollowupTrigger() {

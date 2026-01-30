@@ -2397,12 +2397,12 @@
         function calculatePriceFromPlants(plantCount) {
             const count = parseInt(plantCount) || 0;
             if (count <= 0) return 0;
-            if (count <= 20) return 399;
-            if (count <= 35) return 599;
-            if (count <= 50) return 799;
-            if (count <= 75) return 999;
-            if (count <= 100) return 1199;
-            return 1499; // 101+ plants
+            if (count <= 10) return 499;
+            if (count <= 30) return 699;
+            if (count <= 50) return 899;
+            if (count <= 75) return 1199;
+            if (count <= 100) return 1399;
+            return 1499; // 101-150 plants
         }
 
         // Store current payment amount for use in markPaymentComplete
