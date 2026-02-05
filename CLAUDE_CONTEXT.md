@@ -1,6 +1,6 @@
 # PotPot Backend & Partner App Context for Claude
 
-**Last Updated:** 2026-01-26
+**Last Updated:** 2026-02-03
 
 ## ONLY THESE 3 LIVE WEBSITES EXIST
 1. https://www.potpot.online - Main website
@@ -82,8 +82,32 @@ const SLOT_CONFIG = {
 ## WATI Templates
 - `booking_confirmation` - Sent on new booking
 - `pre_service_com_time` - Day-before reminder
-- `post_service_checkup` - 5-day follow-up
+- `post_service_checkin` - Post-service follow-up
 - `nps_form` - Sent after service completion
+
+## Recent Changes (2026-02-03)
+
+### Firebase Storage Rules Extended
+- **Problem:** Photo uploads failing in partner app — Firebase Storage rules expired on 2026-02-01
+- **Fix:** Extended rules to `timestamp.date(2027, 2, 1)` — valid until Feb 2027
+- **Project:** `potpot-mobile-2025` on Firebase
+
+### Removed Lat/Lng Gardener Selection (Code.gs)
+- **Problem:** When customer shared location, `getAvailableSlots()` picked the closest gardener by distance, bypassing load balancing. Since G002/G003/G005 share the same base coordinates, Bheem (G002) was always picked first, leaving Akash and Sameer unused.
+- **Fix:** Removed entire lat/lng distance-based selection block. All gardener selection now uses pincode-based matching with load balancing.
+- **Result:** All 3 gardeners for shared pincodes are now considered and load balanced by booking count.
+- **Note:** booking.html still sends lat/lng params but they are ignored by the backend.
+
+### Removed Holiday Logic from Slot Generation (Code.gs - Performance Fix)
+- **Problem:** `isGardenerOnHoliday()` was called once per day for 60 days, each time reading the entire Holidays sheet. Plus `countHolidayDays()` read it once per gardener during load balancing. Total: ~63 unnecessary Google Sheets reads, causing 10-15 second slot fetch times.
+- **Fix:** Removed all holiday checks from `getAvailableSlots()`. Removed `countHolidayDays()` call from load balancing. Removed `logInfo` calls from load balancing hot path.
+- **Result:** Slot fetching dropped from 10-15 seconds to ~6 seconds.
+- **Note:** `isGardenerOnHoliday()` and `countHolidayDays()` functions still exist as dead code but are never called.
+- **Holidays sheet** still exists but is no longer read during slot generation.
+
+### WATI Template Change
+- **Changed:** `post_service_checkup` → `post_service_checkin` in `sendPostServiceCheckup()` function
+- **Both template_name and broadcast_name updated**
 
 ## Recent Changes (2026-01-26)
 

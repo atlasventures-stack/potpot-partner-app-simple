@@ -455,8 +455,8 @@
     const url = `${WATI_API_ENDPOINT}/api/v1/sendTemplateMessage?whatsappNumber=91${cleanPhone}`;
 
     const payload = {
-      "template_name": "post_service_checkup",
-      "broadcast_name": "post_service_checkup_" + Date.now(),
+      "template_name": "post_service_checkin",
+      "broadcast_name": "post_service_checkin_" + Date.now(),
       "parameters": []
     };
 
@@ -956,6 +956,9 @@
       const pincodes = rawPincodes.split(',').map(p => String(p).trim().replace('.0', ''));
 
       if (pincodes.includes(inputPincode)) {
+        // Check Status column (index 4) - skip inactive gardeners
+        const status = String(zonesData[i][4] || '').trim().toLowerCase();
+        if (status === 'inactive') continue;
         return true;
       }
     }
@@ -1644,26 +1647,8 @@
     let gardenerID = null;
     let gardenerName = null;
 
-    if (customerLat && customerLng) {
-      let closestDistance = Infinity;
-
-      for (let i = 1; i < zonesData.length; i++) {
-        const baseLat = parseFloat(zonesData[i][4]);
-        const baseLng = parseFloat(zonesData[i][5]);
-
-        if (!isNaN(baseLat) && !isNaN(baseLng)) {
-          const distance = calculateDistance(customerLat, customerLng, baseLat, baseLng);
-
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            gardenerID = zonesData[i][2];
-            gardenerName = zonesData[i][1];
-          }
-        }
-      }
-    }
-
-    if (!gardenerID && pincode) {
+    // Always use pincode-based matching with load balancing
+    if (pincode) {
       const inputPincode = String(pincode).trim().replace('.0', '');
 
       // Find ALL gardeners matching this pincode
@@ -1673,6 +1658,10 @@
         const pincodes = rawPincodes.split(',').map(p => String(p).trim().replace('.0', ''));
 
         if (pincodes.includes(inputPincode)) {
+          // Check Status column (index 4) - skip inactive gardeners
+          const status = String(zonesData[i][4] || '').trim().toLowerCase();
+          if (status === 'inactive') continue;
+
           matchingGardeners.push({
             id: zonesData[i][2],
             name: zonesData[i][1]
@@ -1713,11 +1702,7 @@
             }
           }
 
-          // Also count holiday days in next 7 days
-          const holidayCount = countHolidayDays(ss, gardener.id, today, next7Days);
-          const totalBlocked = bookingCount + holidayCount;
-
-          logInfo('LOAD_BALANCE', `Gardener ${gardener.id} (${gardener.name}): ${bookingCount} bookings + ${holidayCount} holidays = ${totalBlocked} blocked days`);
+          const totalBlocked = bookingCount;
 
           if (totalBlocked < minBlockedDays) {
             minBlockedDays = totalBlocked;
@@ -1727,7 +1712,6 @@
 
         gardenerID = selectedGardener.id;
         gardenerName = selectedGardener.name;
-        logInfo('LOAD_BALANCE', `Selected gardener: ${gardenerID} (${gardenerName}) with ${minBlockedDays} blocked days`);
       }
     }
 
@@ -1812,18 +1796,6 @@
       const dateKey = Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy');
       const dateFormatted = Utilities.formatDate(date, Session.getScriptTimeZone(), 'EEE, dd MMM');
       const dateInternal = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-
-      // Check if gardener is on holiday for this date
-      if (isGardenerOnHoliday(ss, gardenerID, date)) {
-        // Gardener is on holiday - no slots available for this date
-        dates.push({
-          date: dateInternal,
-          dateFormatted: dateFormatted,
-          times: [],
-          holiday: true
-        });
-        continue;
-      }
 
       const times = [];
 
